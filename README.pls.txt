@@ -1,0 +1,308 @@
+BellamyBot 2.1.0 created by Kueller917 from the Muse Board.
+Originally written as an mIRC script. Any version of that sort is now 
+deprecated.
+
+http://board.muse.mu/
+
+Included in this folder should be:
+    bellamybot.py
+    musegames.py
+    setlistgenerator.py
+    timercommands.py
+    txtfunctions.py
+    
+    crowd
+    gig
+    gigcloser
+    ircmsg
+    manson
+    opener
+    piano
+    previous
+    setcloser
+    setlist
+    songs
+    
+    LICENSE
+    README.pls.txt
+    
+The python files are the program and its functions. The main program is in 
+bellamybot.py. This is designed to run on the python2 engine. The nickserv 
+password is not included, therefore some functions that require op may not 
+work. Feel free to change the nick to one that works for you if I have not 
+given you the password myself. This variable is on line 25 of 
+bellamybot.py.
+
+TEXT FILES
+The text files are all accessed at some point or another by the program for 
+various purposes. Python should by default handle text files in the same 
+folder the program is in. If you are running from a shell, the "default" 
+directory will be the folder you are in, so be sure to cd into the 
+BellamyBot folder before running.
+
+For specific information on how these files are handled see the functions they
+are used in, mainly setlistgenerator.py
+
+ARCHIVE
+Another set of text files may be included in the GigArchive folder. This is a 
+storing of all prior setlists. Unlike the other files, GigArchive is accessed 
+through a set filepath and not Python's default
+
+    IT IS IMPORTANT TO UPDATE THE filepath VARIABLE ON LINE 6 OF 
+    txtfunctions.py TO A VALID DIRECTORY IN YOUR OWN SYSTEM
+    
+Wherever Python writes files to by default should be considered the root 
+folder. For example, if Python by default writes files to this folder, then 
+the path should just be "GigArchive/". Remember Windows uses backslashes in 
+its directory listings.
+
+LICENSE
+As per the license, you may do whatever the fuck you want with this. More info
+at: 
+    http://www.wtfpl.net/
+
+******************************************************************************
+
+RUNNING THE BOT
+
+Linux variants:
+Install the "python2" package, which should be in your official repositories. 
+Open a terminal and cd into the BellamyBot folder, then type:
+    
+    python2 bellamybot.py
+
+You can use the full path to run from another folder, but be sure to move the
+text files to that folder first.
+
+Windows:
+Download and install Python 2.7.6 from Python's website. Can be found at
+https://www.python.org/download/
+
+Open up the IDLE (Python GUI) program. This will bring up the Python shell. Go 
+to File > Open and find and open the bellamybot.py file. If you haven't set a
+valid filepath in txtfunctions.py yet, you can open txtfunctions the same way
+and edit and save. 
+Now, in the bellamybot.py window, go to Run > Run Module (or F5) to run the bot. 
+The main shell window will be showing the information. 
+
+Notes:
+I have not used OS X. I assume it can work the same way, or similarly, to 
+Linux, being fully POSIX compliant and all. I'm sure you can also get the IDE
+to run it similarly to Windows.
+
+The implementation sometimes makes it so that the commands are entered faster 
+than the IRC server can handle them. You may need to run the program a few times 
+to get it to work properly. Recommended you open up an IRC client for yourself. 
+If BellamyBot joins the intended channel, it worked. 
+
+If your text files are not in a valid location, or if you have not set a valid 
+path in txtfunctions.py and try to run !setprevious, the program will crash.
+
+******************************************************************************
+
+USAGE
+This next part will be a quick overview of the functions.
+
+BellamyBot runs on IRC through commands beginning with a '!'. Some commands 
+have following arguments and some don't. For commands without arguments, 
+type the command then hit enter. Extra spaces after the command will not 
+run the function.
+
+Arguments are usually written as lists with commas, or a single following 
+argument. Being a simple bot it is somewhat expected you will understand the 
+commands. Bad arguments can result in unwanted behavior.
+
+*   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *
+
+Op Commands:
+    These are commands only runnable by users with op status. 
+
+BOT STATES
+BellamyBot has two states to signify behavior: WAKE, or SLEEP. The majority of
+commands will only work if BellamyBot is "awake". By default, it joins the 
+channel asleep. Best practice is to wake it closely before a gig begins. 
+Commands are either:
+
+    !wake           or
+    !sleep
+    
+The commands can be cycled through. To view what state the bot is in use
+
+    !bot
+
+Wake and sleep will also respectively activate or deactivate the timers that 
+trigger random phrases.
+
+JOIN MESSAGES
+BellamyBot can greet users as they enter the channel. The welcomes can be 
+triggered on or off and will only work when the bot is awake. By default, join
+messages are off. It is recommended to turn off join messages if the join rate
+gets too high. Toggle by using
+
+    !joinmsg ARG
+    
+ARG can be either "on" or "off", without quotations. 
+
+SETLIST CONTROLS
+The main purpose of BellamyBot is to control and handle Muse setlists. These 
+are the list of functions to work with. For these next few functions, know 
+that commands that can read setlists are accessible by everyone, and commands 
+that write to setlists are only accessible by ops.
+
+GIG SET: This sets the concert. Please keep consistent to the specified style 
+when using this.
+
+    !setgig YYYY/MM/DD VENUE/FESTIVAL, CITY/STATE/PROVINCE, COUNTRY
+    
+How to separate the location is up to the user, but at least include the venue
+and country. Separating city and state is acceptable if called for. Use 
+initials for the country. To view the current gig use !gig.
+
+Examples:
+    !setgig 2007/06/16 Wembley Stadium, London, UK
+    !setgig 2013/08/13 Zepp Tokyo, Tokyo, JP
+
+ADD SONG: This command appends a song to the current setlist, including a 
+setlist with zero entries. The function can take multiple arguments and will 
+add songs in order from left to right. Songs are separated by commas. The last
+song should not have a comma.
+
+    !add SONG1, SONG2, SONG3...
+    
+Common abbreviations as song entries will be expanded to full names. See the 
+AcronymReplace function on line 9 of txtfunctions.py for a specific list. 
+To view the current setlist, use !setlist
+
+Examples:
+    !add B&H                    
+         writes: "Butterflies & Hurricanes"
+
+    !add Supremacy, Panic Station, PiB      
+         writes: "Supremacy, Panic Station, Plug In Baby"
+    
+UNDO SONG: A simple command, it will undo the latest song entered into the 
+setlist. BellamyBot will confirm if the song was removed succesfully.
+
+    !undo
+
+Example:
+    !setlist                    
+        output: "Supremacy, Panic Station, Plug In Baby"
+
+    !undo                       
+        output: "The last song has been erased."
+
+    !setlist                    
+        output: "Supremacy, Panic Station"
+    
+REPLACE SONG: If a mistaken song is found and it is not the latest song, 
+instead of using undo multiple times and rewriting the rest of the set, 
+replace song can be used. As title suggests, it will replace an entered song 
+with the song you give it. You can only replace one song at a time.
+
+    !replace EXISTING SONG, NEW SONG
+    
+The EXISTING SONG is a song in the setlist. NEW SONG is the song to replace it.
+Both parameters can be entered as acronyms. If there are more than 2 entires, 
+or if the song is not found, an error will be returned by the bot. 
+
+Example:
+    !setlist                    
+        output: "Plug In Baby, New Born, Uprising"
+
+    !replace New Born, Stockholm Syndrome       
+    
+    !setlist                    
+        output: "Plug In Baby, Stockholm Syndrome, Uprising"
+
+DELETE SONG: This is if you simply want to remove an entire slot in the 
+setlist. Unlike !remove, this can delete multiple songs. The songs can also
+be scattered througout the setlist.
+
+    !delete SONG1, SONG2, SONG3...
+
+Much like !add, you separate the song names by commas. Acronyms in place of 
+song names is also valid. After entering the command BellamyBot will return
+the number of songs succesfully removed.
+
+Example:    
+    !setlist                    
+        output: "New Born, Supermassive Black Hole, Take A Bow, Survival"
+
+    !delete New Born, TaB, Starlight        
+        output: "Deleted 2 out of 3 songs."
+
+    !setlist                    
+        output: "Supermassive Black Hole, Survival" 
+    
+CLEAR SET: When everything is done, the setlist can be emptied by the clear 
+set command.
+
+    !clearset
+    
+And that's it. I don't think you need an example for it.
+
+PREVIOUS SETLIST: When the gig is all done and everyone is complaining it's 
+time to assign the current setlist as the previous. Make sure everything is 
+correct then simply run the command.
+
+    !setprevious
+    
+This will copy the current setlist to the .previous file and head it with the 
+current gig from the .gig file (that was set using !setgig). Make sure both 
+the 'setlist' and 'gig' files are accurate.
+
+It will also copy everything to an archive file to be put into GigArchive, or 
+whatever directory it's meant to go to. This is where making sure the filepath
+variable is valid is important. BellamyBot will confirm when all is finished. 
+
+*   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *
+
+Non-op basic commands:
+    These commands can be accessed by everyone. 
+    
+The following commands can be run even if the bot is offline:
+
+    !bot            Displays the bot version and state.
+    !gig            Displays the current set gig.
+
+    !message MESSAGE GOES HERE
+        This will write a message to the .ircmsg file and give me a 
+        memo that there is a message. Use if I am afk. Change to 
+        another nick (line 223 bellamybot.py) if you want someone else 
+        to get the memo
+    
+The following commands are state dependent:
+
+    !setlist        Lists the current setlist from the .setlist. 
+                    Also tells if setlist is empty.
+    !previousset    Lists the previous setlist from the .previous file.
+    !commands       Lists the available commands. 
+    
+*   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *
+
+Non-op game commands:
+    These can also be run by everyone. Info in musegames.py file.
+    
+    !closer         Gives a random closer taken from the .closer file.
+    !opener         Same but for openers from the .opener file
+    !realfan        You're either a REAL FAN or not. Simple binary
+                    random generator.
+    !ru-roulette    A game of Russian Roulette. Will NOT work if 
+                    you're an op or higher.
+    
+    !roulette       Runs the T2L tour style roulette. Either New 
+                    Born, Stockholm Syndrome, or green
+    !green          If you get green, run green to get a rarity. 
+                    Only valid if you land on green.
+    
+    !manson         Gives or takes a number of Manson guitars to a
+                    nick. Stores the value offline.
+    !setgen         Generates a random setlist. See setlistgenerator.py 
+                    for more info.
+    
+    !choice SONG    
+        Sometimes BellamyBot will prompt for a crowd choice. If so it 
+        will take song requests done through !choice for one minute, 
+        then pick a random song from the list. Command is only valid
+        for that minute.
