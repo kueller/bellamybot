@@ -43,7 +43,7 @@ irc.send('PRIVMSG %s :Hello!\r\n' % (channel))
 owner = ('Kueller917', 'Kueller')
 ops = ('Kueller917', 'Kueller', 'ryanp16', 'fabripav')
 ircmsg = ('PRIVMSG %s' % (channel))
-sourceCode = 'http://waa.ai/43iV'
+sourceCode = 'http://waa.ai/4m8N'
 
 botstate = False
 
