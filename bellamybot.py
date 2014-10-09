@@ -1,5 +1,5 @@
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-BellamyBot v3.0.0 created by Kueller917.
+BellamyBot v3.1.0 created by Kueller917.
 Created for use with Python 3.
 Being created for personal use, the processes might not be the most efficient, 
 nor the simplest.
@@ -225,13 +225,12 @@ def main():
                         ircmsg("Current setlist has been cleared")
 
                     if command == "!undo\r\n":
-                        filename = "text/setlist"
-                        if txtfunctions.song_undo(filename):
+                        if (txtfunctions.song_undo() != -1):
                             ircmsg("The last song has been erased")
 
                     if command == "!replace":
                         response = txtfunctions.replace_song(argument)
-                        if response:
+                        if (response != -1):
                             ircmsg("%s" % (response))
 
                     if command == "!delete":
@@ -246,7 +245,7 @@ def main():
 
                 # All user commands
                 if command == "!bot\r\n":
-                    stateStr = ("BellamyBot version 2.1.0 created by "
+                    stateStr = ("BellamyBot version 3.1.0 created by "
                                 "Kueller917. Status:")
                     if (botstate):
                         ircmsg("%s ONLINE." % (stateStr))

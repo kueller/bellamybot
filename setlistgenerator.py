@@ -1,5 +1,6 @@
 import sys
 import txtfunctions
+import filehandle
 from random import randint
 
 # Setlist generator
@@ -34,11 +35,11 @@ def set_construct(length, array, output, randlimit):
     i = 0
     while i < length:
         songLine = randint(0, randlimit)
-        songEntry = txtfunctions.remove_newline_return(array[songLine])
+        songEntry = filehandle.remove_nr(array[songLine])
         while ((songEntry in output) or (songEntry in setlist.main) or
                (songEntry in setlist.otherEnc)):
             songLine = randint(0, randlimit)
-            songEntry = txtfunctions.remove_newline_return(array[songLine])
+            songEntry = filehandle.remove_nr(array[songLine])
         if (output == ''):
             output = songEntry
         else:

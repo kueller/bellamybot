@@ -1,6 +1,7 @@
 import sys
 import socket
 import txtfunctions
+import filehandle
 from random import randint
 
 # Chooses a random closer from file (opener/closer) 
@@ -18,7 +19,7 @@ def random_game(filename):
     options = text.readlines()
 
     randomResult = options[choice]
-    randomResult = txtfunctions.remove_newline_return(randomResult)
+    randomResult = filehandle.remove_nr(randomResult)
     return randomResult
 
 def T2L_roulette():
