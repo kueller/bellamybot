@@ -1,126 +1,99 @@
 import sys
 import socket
-import txtfunctions
 import filehandle
 from random import randint
 
 # Chooses a random closer from file (opener/closer) 
 # See setlistgenerator.py for more info on files.
-# Returns 0 if there's an error
+# Passes on the IOError exception if file could not be opened
 def random_game(filename):
-    choice = randint(0,7)
-
     try:
-        text = open(filename, 'r')
-    except:
-        print("Could not open file for random_game")
-        return 0
+        options = filehandle.get_list(filename)
+    except IOError:
+        raise IOError("Could not open file for random_game")
 
-    options = text.readlines()
+    choice = randint(0, len(options) - 1)
 
     randomResult = options[choice]
     randomResult = filehandle.remove_nr(randomResult)
     return randomResult
 
+# Lands on either New Born, Stockholm, or green
+# Green is denoted by -1
 def T2L_roulette():
     spin = randint(0,10)
-    if (spin <= 4):
-            return 'The roulette landed on New Born!'
+    if spin <= 4:
+            return "The roulette landed on New Born!"
     elif (spin >= 5) and (spin <= 9):
-            return 'The roulette landed on Stockholm Syndrome!'
+            return "The roulette landed on Stockholm Syndrome!"
     else:
-            return 0
+            return -1
 
+# Chooses a rarity if the roulette lands on green
 def roulette_green(nick):
     spin = randint(0,2)
-    if (not(spin)):
-            return ('Congratulations %s, you got Dead Star!' % (nick))
-    elif (spin == 1):
-            return ('Congratulations %s, you got Micro Cuts!' % (nick))
+    if not(spin):
+            return "Congratulations %s, you got Dead Star!" % (nick)
+    elif spin == 1:
+            return ("Congratulations %s, you got Micro Cuts!" % (nick))
     else:
-            return ('Congratulations %s, you got Unnatural Selection!'\
-                                                                  % (nick))
+            return ("Congratulations %s, you got Unnatural Selection!"
+                    % (nick))
 
 # Manson game, gives or takes a 1-10 random number of Mansons to the user.
 # Values stored offline and assigned to nick. Same nick can play continuously.
-# Returns 0 if there's an error
+# Passes on IOError exception for any issues handling the text file
+# Throws IndexError exception for issues finding the nick index or appending
 def manson_game(nick):
-    outputStr = None
+    try:
+        mansonList = filehandle.get_list('text/manson')
+    except IOError:
+        raise IOError("Could not open file for manson_game")
+
+    nickExists = False
+
+    mansonRand = randint(1,10)
+    mansonAddDec = randint(0,1) 
+
+    for entry in mansonList:
+        currentNick = entry.split(':')[0]
+        if nick == currentNick:
+            try:
+                nickPosition = mansonList.index(entry)
+            except:
+                raise IndexError("Error getting index from manson list")
+            nickExists = True
+
+    if mansonAddDec == 0:
+        mansonCount = 0 - mansonRand
+    else:
+        mansonCount = mansonRand
+
+    if nickExists and nickPosition != -1:
+        value = mansonList[nickPosition].split(':')[1]
+        value = int(value)
+
+        mansonCount = value + mansonCount
+        mansonList[nickPosition] = "%s:%d" % (nick, mansonCount)
+    else:
+        try:
+            mansonList.append("%s:%d" % (nick, mansonCount))
+        except:
+            raise IndexError("Error appending new manson entry")
+
+    mansonList = sorted(mansonList, key=str.lower)
 
     try:
-        mansonText = open('text/manson', 'r')
-        mansonList = mansonText.readlines() 
-        length = len(mansonList)    
-        mansonText.close()
-    except:
-        print("Error reading manson files")
-        return 0
+        filehandle.put_list('text/manson', mansonList)
+    except IOError:
+        raise IOError("Error writing manson list")
+    
+    if mansonAddDec == 0:             
+        return ("%s lost %d Mansons. " 
+                     "Your total number of Mansons is now %d"
+                     % (nick, mansonRand, mansonCount))
 
-    nickExists = 0
-
-    mansonCount = randint(1,10)
-    mansonAddDec = randint(0,1) 
-        
-    mansonRand = mansonCount
-
-    if (mansonAddDec == 0):
-        mansonCount = 0 - mansonCount
-
-        mansonList = list(mansonList)
-
-        i = 0
-        while (i < length):
-            currentEntry = mansonList[i]
-            currentNick = currentEntry.split(':')[0]
-            if (nick == currentNick):
-                value = currentEntry.split(':')[1]
-                value = value.split('\n')[0]
-                value = int(value)
-
-                mansonCount = mansonCount + value                       
-                mansonList[i] = "%s:%d\n" % (nick, mansonCount)
-
-                mansonList = tuple(mansonList)
-
-                try:
-                    mansonText = open('text/manson', 'w')
-                    mansonText.write('')
-                    mansonText.close()
-
-                    mansonText = open('text/manson', 'a')
-                except:
-                    print("Error writing to manson files")
-                    return 0
-
-                j = 0
-                while (j < length):
-                    mansonText.write(mansonList[j])
-                    j += 1
-                mansonText.close()
-
-                nickExists = 1
-
-                break                   
-                i += 1          
-
-    if (nickExists == 0):
-        currentString = nick + ':' + ("%d" % mansonCount) + '\n'
-
-        try:
-            mansonText = open('text/manson', 'a')
-            mansonText.write(currentString)         
-            mansonText.close()
-        except:
-            print("Error reading manson files")
-            return 0
-
-    if (mansonAddDec == 0):             
-        outputStr = "%s lost %d Mansons. Your total number of Mansons is now %d"\
-                                % (nick, mansonRand, mansonCount)
-
-    elif (mansonAddDec == 1):           
-        outputStr = ( "%s ganed %d Mansons. "\
-                      "Your total number of Mansons is now %d"\
+    elif mansonAddDec == 1:           
+        return ( "%s ganed %d Mansons. "
+                      "Your total number of Mansons is now %d"
                       % (nick, mansonRand, mansonCount))
-
-    return outputStr
