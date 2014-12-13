@@ -1,10 +1,8 @@
+import random
 import filehandle
-import commands
-import txtfunctions
 from timers import Timer
-from random import randint
 
-# Says a random phrase from ".botphrases"
+# Says a random phrase from "botphrases"
 # Passes on the exception if there was an problem with the text file
 def random_phrase():
     try:
@@ -12,15 +10,8 @@ def random_phrase():
     except IOError:
         raise IOError("Error opening file from random_phrase")
     
-    phraseLength = len(randomList)
-
-    throw = randint(1,3)
-
-    if throw != 3:
-        line = randint(0, phraseLength - 1)
-        phrase = randomList[line]
-    else:
-        phrase = "\x01ACTION throws %d Musos into the air" % randint(2,20)
+    phrase = random.choice(randomList)
+    phrase.replace("%d", "%d" % random.randint(2,20))
 
     return phrase
 
@@ -36,7 +27,7 @@ class RussianRoulette:
     def __init__(self, nick):
         self.gameState = 0
         self.gameNick = nick
-        self.cylinder = randint(1,6)
+        self.cylinder = random.randint(1,6)
         self.gameTimer = Timer()
         self.gameTimer.secTimer(0)
 
@@ -67,11 +58,11 @@ class RussianRoulette:
                 else:
                     return "You got lucky this time."
 
-    def shoot(self, irc):
-        if self.gameNick not in commands.bot.ops:
+    # Kicks user from channel. Requires the irc object to kick user.
+    def shoot(self, irc, info):
+        if self.gameNick in info.ops:
             irc.msg("You're too important to die")
             return
         
         irc.kick(self.gameNick, "BANG!")
         irc.msg("He didn't fly so good. Who wants to try next?")
-                

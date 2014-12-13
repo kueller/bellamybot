@@ -1,5 +1,5 @@
-import sys
 import socket
+import filehandle
 
 # Class for parsing the IRC incoming messages.
 # Not every message will be associated with every variable
@@ -15,21 +15,17 @@ class IRCMessage:
         self.nick = text.split('!')[0].replace(':','')
         self.msgtype = text.split(' ')[1]
 
-        try:
+        if len(text.split(' ')) >= 3:
             self.chan = text.split(' ')[2]
-        except:
-            None
 
-        try:
+        if len(text.split(':')) >= 3:
             self.msg = text.split(':')[2]
-            self.command = self.msg.split(' ')[0]
-        except:
-            None
 
-        try:
+        if self.msg != None:
+            self.command = self.msg.split(' ')[0]
+
+        if self.msg != None and len(self.msg.partition(' ')) >= 3:
             self.argument = self.msg.partition(' ')[2]
-        except:
-            None
 
 # General class for the IRC connection. Contains all join and messaging commands
 class BotConnection:
@@ -79,14 +75,88 @@ class BotConnection:
                         % (nick, message)).encode('utf-8'))
 
 # General needed information about the bot's state and other small strings
-# This will also be connected with config files in the future
+# This is where the data from the config file goes
 class BotInfo:
+    server = None
+    channel = None
+    nick = None
+    password = None
+    
+    mbid = None
+
+    sourceCode = None
+
+    owner = []
+    ops = []
+
+    joinmsg = None
+    
     green = False
-    joinmsg = False
     greenNick = None
 
-    sourceCode = "http://waa.ai/4m8N"
-    owner = ("Kueller917", "Kueller")
-    ops = ("Kueller917", "Kueller", "ryanp16", "fabripav")
+    state = None
 
-    state = False
+    def __init__(self):
+        self.owner = []
+        self.ops = []
+        self.mbid = "9c9f1380-2516-4fc9-a3e6-f9f61941d090"
+        self.sourceCode = "http://waa.ai/4m8N"
+        self.joinmsg = False
+        self.state = False
+
+    def parseConfig(self, filename):
+        try:
+            configLines = filehandle.get_list(filename)
+        except IOError as e:
+            raise IOError(e)
+
+        for line in configLines:
+            if line.startswith("#"):
+                continue
+            splitLine = line.split("=")
+            if len(splitLine) < 2:
+                continue
+            
+            arg = splitLine[0].strip()
+            value = splitLine[1].strip()
+
+            if arg == "server":
+                self.server = value
+            elif arg == "channel":
+                self.channel = value
+            elif arg == "nick":
+                self.nick = value
+            elif arg == "password":
+                self.password = value
+            elif arg == "mbid":
+                self.mbid = value
+            elif arg == "source":
+                self.sourceCode = value
+            elif arg == "owner":
+                owners = value.split(",")
+                for owner in owners:
+                    self.owner.append(owner)
+            elif arg == "ops":
+                ops = value.split(",")
+                for op in ops:
+                    self.ops.append(op)
+            elif arg == "joinmsg":
+                if value == "on":
+                    self.joinmsg = True
+                elif value == "off":
+                    self.joinmsg = False
+            elif arg == "state":
+                if value == "on":
+                    self.state = True
+                elif value == "off":
+                    self.state = False
+                        
+    def verifyConfig(self):
+        if self.server == None or self.nick == None or self.channel == None:
+            raise Exception("Server, nick, and channel required in config.")
+        if len(self.ops) == 0:
+            print("Warning: No channel ops specified.")
+        if len(self.owner) == 0:
+            print("Warning: No channel owner specified.")    
+        if self.password == None:
+            print("Warning: No password entered.")

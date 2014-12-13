@@ -1,5 +1,5 @@
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-BellamyBot v3.2.0 created by Kueller917.
+BellamyBot v4.0.0 created by Kueller917.
 Created for use with Python 3.
 Being created for personal use, the processes might not be the most efficient, 
 nor the simplest.
@@ -9,39 +9,33 @@ I do not "grant permission" for use as permission is yours by default.
 See LICENSE for more info. However, I do not know why you would want to use 
 this. There are better bots.
 
-Nickserv password not included for hopefully obvious reasons.
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
-import sys
 import socket
 import commands
 import filehandle
-import txtfunctions
 import timercommands
-import setlistgenerator
 from timers import Timer
 from random import randint
+from bellamylib import BotInfo
 from crowdchoice import CrowdChoice
 from bellamylib import BotConnection
 
-# Connect to IRC using this information
-# I'm planning to change these features with a config file
-server = "irc.rizon.net"
-channel = "#muse"
-botnick = "BellamyBot"
-password = ""
-
-irc = BotConnection()
-
-irc.connect(server)
-print("Connecting to %s" % server)
-
-irc.setuser("Bellamy", "Hello")
-irc.setnick(botnick)
-irc.identify(password)
-irc.join(channel)
-
 def main():
+
+    info = BotInfo()
+    info.parseConfig("config")
+    info.verifyConfig()
+
+    irc = BotConnection()
+
+    irc.connect(info.server)
+    print("Connecting to %s" % info.server)
+
+    irc.setuser(info.nick, "Hello")
+    irc.setnick(info.nick)
+    irc.identify(info.password)
+    irc.join(info.channel)
 
     # Repeating timer to say a random phrase every 10-20 minutes
     phraseTimer = Timer()
@@ -57,20 +51,20 @@ def main():
         # Timer checks
         if phraseTimer.check():
             try:
-                phrase = commands.phrase()
+                phrase = commands.phrase(info)
                 irc.msg(phrase)
                 phraseTimer.minTimer(randint(10,20))
             except IOError as e:
                 print(e)
 
         choiceMsg = crowd.check()
-        if choiceMsg != None:
+        if choiceMsg != None and info.state:
             irc.msg(choiceMsg)
 
         if roulette != None:
             ruMsg = roulette.check()
             if ruMsg == "KICK":
-                roulette.shoot(irc)
+                roulette.shoot(irc, info)
             elif ruMsg != None:
                 irc.msg(ruMsg)
         
@@ -100,17 +94,12 @@ def main():
             if text.command in ("!ru-roulette\r\n", "!ru-roulette"):
                 roulette = timercommands.RussianRoulette(text.nick)
 
-            if text.command in ("!setgen\r\n", "!setgen"):
-                setlistgenerator.generate(irc)
-
             # Other general commands are sent to the commands function
-            # Exceptions are caught and printed, but do not stop the program
-            try:
-                message = commands.command_run(text)
-                if message != None:
+            # Recieves a list of messages, print them all.
+            messages = commands.command_run(text, info)
+            if len(messages) > 0:
+                for message in messages:
                     irc.msg(message)
-            except Exception as e:
-                print(e)
  
         except socket.timeout:
             None

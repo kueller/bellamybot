@@ -1,8 +1,8 @@
+import random
 import filehandle
-from random import randint
 
 # Random setlist is constructed in this class.
-# Sets have a main set, and can have one or two encored.
+# Sets have a main set, and can have one or two encores.
 # More info in setlistgenerator.py
 class Setlist:
     
@@ -16,6 +16,8 @@ class Setlist:
     firstEncore = None
     secondEncore = None
 
+    # Initialization gets the file list for each text file.
+    # Throws Exception on I/O errors.
     def __init__(self):
         try:
             self.openers = filehandle.get_list('text/opener')
@@ -34,21 +36,22 @@ class Setlist:
     # list defined by "section" from the list defined by "songList"
     def constructor(self, section, songList, length):
         for i in range(0, length):
-            songLine = randint(0, len(songList) - 1)
-            songEntry = songList[songLine]
+            songEntry = random.choice(songList)
             while ((songEntry in self.mainSet)
                    or (songEntry in self.firstEncore)
                    or (songEntry in self.secondEncore)):
-                songLine = randint(0, len(songList) - 1)
-                songEntry = songList[songLine]
+                songEntry = random.choice(songList)
                 
             section.append(songEntry)            
-        
+
+    # Chunky constructor setlists that simply call constructor to make
+    # different parts of the random setlist.
+    # Again, see setlistgenerator.py for set structure info.
     def constructMainSet(self):
         self.constructor(self.mainSet, self.openers, 1)
-        self.constructor(self.mainSet, self.songs, randint(5,7))
-        self.constructor(self.mainSet, self.piano, randint(1,3))
-        self.constructor(self.mainSet, self.songs, randint(6,7))
+        self.constructor(self.mainSet, self.songs, random.randint(5,7))
+        self.constructor(self.mainSet, self.piano, random.randint(1,3))
+        self.constructor(self.mainSet, self.songs, random.randint(6,7))
         self.constructor(self.mainSet, self.setClosers, 1)
 
     def constructSingleEncore(self):
@@ -58,7 +61,7 @@ class Setlist:
 
     def constructTwoEncore(self):
         self.constructor(self.firstEncore, self.openers, 1)
-        self.constructor(self.firstEncore, self.songs, randint(1,2))
+        self.constructor(self.firstEncore, self.songs, random.randint(1,2))
         self.constructor(self.firstEncore, self.setClosers, 1)
 
         self.constructor(self.secondEncore, self.openers, 1)
@@ -66,40 +69,41 @@ class Setlist:
         self.constructor(self.secondEncore, self.gigClosers, 1)
 
     # Goes through the lists and creates one string for each
-    # They are then messages through IRC. Requires the irc object to be
-    # passed as an argument
-    def printSet(self, irc):
-        setlist = None
-        encore1 = None
-        encore2 = None
+    # Returns a dictionary containing the 3 possible parts of the setlist
+    def printSet(self):
+        randomSet = {
+            'setlist': None,
+            'encore1': None,
+            'encore2': None
+        }
+
         for song in self.mainSet:
-            if setlist == None:
-                setlist = song
+            if randomSet['setlist'] == None:
+                randomSet['setlist'] = song
             else:
-                setlist = "%s, %s" % (setlist, song)
-        irc.msg("%s" % setlist)
+                randomSet['setlist'] = "%s, %s" % (randomSet['setlist'], song)
 
         if len(self.secondEncore) == 0:
-            encore1 = "ENCORE: "
+            randomSet['encore1'] = "ENCORE: "
             for song in self.firstEncore:
-                if encore1 == "ENCORE: ":
-                    encore1 = "%s%s" % (encore1, song)
+                if randomSet['encore1'] == "ENCORE: ":
+                    randomSet['encore1'] = "%s%s" % (randomSet['encore1'], song)
                 else:
-                    encore1 = "%s, %s" % (encore1, song)
-            irc.msg("%s" % encore1)
+                    randomSet['encore1'] = "%s, %s" % (randomSet['encore1'], song)
         else:
-            encore1 = "ENCORE 1: "
-            encore2 = "ENCORE 2: "
+            randomSet['encore1'] = "ENCORE 1: "
+            randomSet['encore2'] = "ENCORE 2: "
+
             for song in self.firstEncore:
-                if encore1 == "ENCORE 1: ":
-                    encore1 = "%s%s" % (encore1, song)
+                if randomSet['encore1'] == "ENCORE 1: ":
+                    randomSet['encore1'] = "%s%s" % (randomSet['encore1'], song)
                 else:
-                    encore1 = "%s, %s" % (encore1, song)
-            irc.msg("%s" % encore1)
+                    randomSet['encore1'] = "%s, %s" % (randomSet['encore1'], song)
 
             for song in self.secondEncore:
-                if encore2 == "ENCORE 2: ":
-                    encore2 = "%s%s" % (encore2, song)
+                if randomSet['encore2'] == "ENCORE 2: ":
+                    randomSet['encore2'] = "%s%s" % (randomSet['encore2'], song)
                 else:
-                    encore2 = "%s, %s" % (encore2, song)
-            irc.msg("%s" % encore2)
+                    randomSet['encore2'] = "%s, %s" % (randomSet['encore2'], song)
+
+        return randomSet

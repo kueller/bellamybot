@@ -1,7 +1,5 @@
-import sys
-import socket
+import random
 import filehandle
-from random import randint
 
 # Chooses a random closer from file (opener/closer) 
 # See setlistgenerator.py for more info on files.
@@ -12,33 +10,30 @@ def random_game(filename):
     except IOError:
         raise IOError("Could not open file for random_game")
 
-    choice = randint(0, len(options) - 1)
-
-    randomResult = options[choice]
+    randomResult = random.choice(options)
     randomResult = filehandle.remove_nr(randomResult)
     return randomResult
 
 # Lands on either New Born, Stockholm, or green
 # Green is denoted by -1
 def T2L_roulette():
-    spin = randint(0,10)
+    spin = random.randint(0,10)
     if spin <= 4:
-            return "The roulette landed on New Born!"
+        return "The roulette landed on New Born!"
     elif (spin >= 5) and (spin <= 9):
-            return "The roulette landed on Stockholm Syndrome!"
+        return "The roulette landed on Stockholm Syndrome!"
     else:
-            return -1
+        return -1
 
 # Chooses a rarity if the roulette lands on green
 def roulette_green(nick):
-    spin = randint(0,2)
+    spin = random.randint(0,2)
     if not(spin):
-            return "Congratulations %s, you got Dead Star!" % (nick)
+        return "Congratulations %s, you got Dead Star!" % (nick)
     elif spin == 1:
-            return ("Congratulations %s, you got Micro Cuts!" % (nick))
+        return "Congratulations %s, you got Micro Cuts!" % (nick)
     else:
-            return ("Congratulations %s, you got Unnatural Selection!"
-                    % (nick))
+        return "Congratulations %s, you got Unnatural Selection!" % (nick)
 
 # Manson game, gives or takes a 1-10 random number of Mansons to the user.
 # Values stored offline and assigned to nick. Same nick can play continuously.
@@ -52,8 +47,10 @@ def manson_game(nick):
 
     nickExists = False
 
-    mansonRand = randint(1,10)
-    mansonAddDec = randint(0,1) 
+    mansonRand = random.randint(1,10)
+
+    # True/False, whether or not Mansons will be added or removed
+    mansonAddDec = random.randint(0,1) 
 
     for entry in mansonList:
         currentNick = entry.split(':')[0]
@@ -69,7 +66,7 @@ def manson_game(nick):
     else:
         mansonCount = mansonRand
 
-    if nickExists and nickPosition != -1:
+    if nickExists:
         value = mansonList[nickPosition].split(':')[1]
         value = int(value)
 
@@ -89,11 +86,9 @@ def manson_game(nick):
         raise IOError("Error writing manson list")
     
     if mansonAddDec == 0:             
-        return ("%s lost %d Mansons. " 
-                     "Your total number of Mansons is now %d"
+        return ("%s lost %d Mansons. Your total number of Mansons is now %d"
                      % (nick, mansonRand, mansonCount))
 
     elif mansonAddDec == 1:           
-        return ( "%s ganed %d Mansons. "
-                      "Your total number of Mansons is now %d"
+        return ("%s ganed %d Mansons. Your total number of Mansons is now %d"
                       % (nick, mansonRand, mansonCount))

@@ -42,4 +42,3 @@ class Timer:
             return time.localtime()[4] == self.timeDelay
         elif self.timerType == TimerType.SECOND:
             return time.localtime()[5] == self.timeDelay
-        

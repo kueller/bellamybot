@@ -1,0 +1,27 @@
+# Uncomment each entry you want to use and add the appropriate value
+# Yes the hash means a comment
+
+# These entries are required. Format channel with hash, such as #channel
+#server =
+#channel =
+#nick =
+#password =
+
+# A MusicBrainz ID for setlist.fm searches.
+# Defaults to Muse (9c9f1380-2516-4fc9-a3e6-f9f61941d090)
+#mbid =
+
+# URL for the source code. Defaults to http://waa.ai/4m8N
+#souce =
+
+# ops and owner can be a list, separated by commas (user1, user2, etc..)
+# No defaults, but program will still run without them, with a warning.
+#owner =
+#ops =
+
+# Whether the bot will be awake or asleep on startup. Defaults to sleep.
+# Can enter either "on" or "off" (without quotations)
+#state =
+
+# Whether bot has join messages on startup. Defaults to off. Same as state.
+#joinmsg =

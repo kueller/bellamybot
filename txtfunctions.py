@@ -79,41 +79,33 @@ def print_set(filename):
     except IOError:
         raise IOError("Error opening file to print")
     
-    fileSize = len(fileList)
+    fileLength = len(fileList)
 
-    if fileSize == 0:
+    if fileLength == 0:
         print('EMPTY SETLIST')
         listFinal = ''
     else:
-        currentSong = fileList[0]
-        currentSong = filehandle.remove_nr(currentSong)
+        currentSong = filehandle.remove_nr(fileList[0])
         listFinal = currentSong
 
         # Extra formatting to print "previous setlist"
         if filename == 'text/previous':
             print('Printing PREVIOUS')
-            listFinal = '%s: ' % (currentSong)
+            listFinal = "%s:" % (currentSong)
 
-            currentSong = fileList[1]
-            currentSong = filehandle.remove_nr(currentSong)
-            listFinal = '%s%s' % (listFinal, currentSong)
+            currentSong = filehandle.remove_nr(fileList[1])
+            listFinal = "%s %s" % (listFinal, currentSong)
 
-            i = 2
-            while i < fileSize:
-                currentSong = fileList[i]
-                currentSong = filehandle.remove_nr(currentSong)
-                listFinal = '%s, %s' % (listFinal, currentSong)
-                i += 1
-
+            startIndex = 2
         else:
             print('Printing set')
-            i = 1
-            while i < fileSize:
-                currentSong = fileList[i]
-                currentSong = filehandle.remove_nr(currentSong)
-                listFinal = '%s, %s' % (listFinal, currentSong)
-                i += 1
+            startIndex = 1
 
+        # Add the rest of the songs to the print message.
+        for currentSong in fileList[startIndex:]:
+            currentSong = filehandle.remove_nr(currentSong)
+            listFinal = "%s, %s" % (listFinal, currentSong)
+            
     return listFinal
 
 # Copies the gig and setlist to a previous setlist file
@@ -177,7 +169,7 @@ def set_previous():
 
     sys.stdout.write('\t[DONE]\n')
 
-    outputString = 'Current setlist copied over as previous set.'
+    outputString = "Current setlist copied over as previous set."
     return outputString
 
 # Takes 2 songs, finds the first song in the set, replaces it with the second
@@ -282,17 +274,17 @@ def delete_song(argument):
     songCount = len(songs)
     print('Deleting %d songs...' % (songCount))
 
+    try:
+        setlist = filehandle.get_list('text/setlist')
+    except IOError:
+        raise IOError("Error getting set for delete_song")
+    
     for song in songs:
         compared = False
 
         song = acronym_replace(song)
         sys.stdout.write('Comparing song: %s' % (song))
 
-        try:
-            setlist = filehandle.get_list('text/setlist')
-        except IOError:
-            raise IOError("Error getting set for delete_song")
-        
         try:
             songIndex = setlist.index(song)
             compared = True
@@ -306,17 +298,17 @@ def delete_song(argument):
             except:
                 print("Error deleting song")
             
-            try:
-                filehandle.put_list('text/setlist', setlist)
-            except IOError:
-                raise IOError("Error writing set for delete_song")
-
             sys.stdout.write('\tDELETED')
 
         print('\n')
  
     print('Deleted %d/%d songs' % (deleteCount, songCount))
 
+    try:
+        filehandle.put_list('text/setlist', setlist)
+    except IOError:
+        raise IOError("Error writing set for delete_song")
+    
     if (deleteCount == 0):
         outputMsg = 'Could not delete any songs.'
     else:

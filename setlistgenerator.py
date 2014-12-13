@@ -22,12 +22,12 @@ from random import randint
 
 # Values that need to be read by different functions
 
-def generate(irc):
+def generate():
     try:
         randomSet = setgenlib.Setlist()
     except IOError as e:
         print(e)
-        return
+        return None
     
     encoreCount = randint(0,1)
 
@@ -38,4 +38,4 @@ def generate(irc):
     else:
         randomSet.constructSingleEncore()
 
-    randomSet.printSet(irc)
+    return randomSet.printSet()

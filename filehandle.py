@@ -54,5 +54,3 @@ def clear_file(filename):
 
     fileText.write('')
     fileText.close()
-        
-        

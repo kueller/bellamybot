@@ -1,4 +1,4 @@
-BellamyBot 3.2.0 created by Kueller917 from the Muse Board.
+BellamyBot 4.0.0 created by Kueller917 from the Muse Board.
 
 http://board.muse.mu/
 
@@ -10,6 +10,7 @@ Included should be:
     filehandle.py
     musegames.py
     setgenlib.py
+    setlistfm.py
     setlistgenerator.py
     timercommands.py
     timers.py
@@ -26,7 +27,8 @@ Included should be:
     setcloser
     setlist
     songs
-    
+
+    config
     LICENSE
     TUTORIAL
     README.md
@@ -80,6 +82,14 @@ If BellamyBot joins the intended channel, it worked.
 
 ******************************************************************************
 
+CONFIG
+BellamyBot now includes a configuration file for easy setting changes.
+Information, such as for the IRC connection, are required and must be valid.
+Some other info is optional and has defaults. For more info see the included
+config file.
+
+******************************************************************************
+
 USAGE
 This next part will be a quick overview of the functions.
 
@@ -93,13 +103,14 @@ commands. Bad arguments may result in unwanted behavior.
 *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *
 
 Op Commands:
-    These are commands only runnable by users with op status. 
+    These are commands only runnable by users with op status.
+    NOTE: ops and owners are not required to be added in the config file.
+    However, with both of them empty, these commands cannot be run.
 
 BOT STATES
 BellamyBot has two states to signify behavior: WAKE, or SLEEP. The majority of
-commands will only work if BellamyBot is "awake". By default, it joins the 
-channel asleep. Best practice is to wake it closely before a gig begins. 
-Commands are either:
+commands will only work if BellamyBot is "awake". Best practice is to wake it
+closely before a gig begins. Commands are either:
 
     !wake           or
     !sleep
@@ -108,15 +119,18 @@ The commands can be cycled through. To view what state the bot is in use
 
     !bot
 
+By default, the bot joins asleep. This can be changed in the config file
+by setting state to "on".
+
 JOIN MESSAGES
 BellamyBot can greet users as they enter the channel. The welcomes can be 
-triggered on or off and will only work when the bot is awake. By default, join
-messages are off. It is recommended to turn off join messages if the join rate
-gets too high. Toggle by using
+triggered on or off and will only work when the bot is awake. It is recommended
+to turn off join messages if the join rate gets too high. Toggle by using
 
     !joinmsg ARG
     
-ARG can be either "on" or "off", without quotations. 
+ARG can be either "on" or "off", without quotations.
+By default, join messages are off. This can be changed in the config file.
 
 SETLIST CONTROLS
 The main purpose of BellamyBot is to control and handle Muse setlists. These 
@@ -282,7 +296,7 @@ The following commands are state dependent:
 *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *
 
 Non-op game commands:
-    These can also be run by everyone. Info in musegames.py file.
+    These can also be run by everyone.
     
     !closer         Gives a random closer taken from the .closer file.
     !opener         Same but for openers from the .opener file
@@ -300,7 +314,11 @@ Non-op game commands:
                     nick. Stores the value offline.
     !setgen         Generates a random setlist. See setlistgenerator.py 
                     for more info.
-    
+
+    !setfm          Gets a random setlist from setlist.fm and prints it
+                    out, along with a link. See setfm.py for more info.
+                    MBID for the band can be set in the config file.
+
     !choice SONG    
         Sometimes BellamyBot will prompt for a crowd choice. If so it 
         will take song requests done through !choice for one minute, 
