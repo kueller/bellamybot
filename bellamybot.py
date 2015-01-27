@@ -1,5 +1,5 @@
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-BellamyBot v4.0.0 created by Kueller917.
+BellamyBot v4.1.0 created by Kueller917.
 Created for use with Python 3.
 Being created for personal use, the processes might not be the most efficient, 
 nor the simplest.
@@ -17,26 +17,14 @@ import filehandle
 import timercommands
 from timers import Timer
 from random import randint
-from bellamylib import BotInfo
+from bellamylib import IRCBot
 from crowdchoice import CrowdChoice
-from bellamylib import BotConnection
 
 def main():
 
-    info = BotInfo()
-    info.parseConfig("config")
-    info.verifyConfig()
-
-    irc = BotConnection()
-
-    irc.connect(info.server)
-    print("Connecting to %s" % info.server)
-
-    irc.setuser(info.nick, "Hello")
-    irc.setnick(info.nick)
-    irc.identify(info.password)
-    irc.join(info.channel)
-
+    irc = IRCBot()
+    irc.start()
+    
     # Repeating timer to say a random phrase every 10-20 minutes
     phraseTimer = Timer()
     phraseTimer.minTimer(randint(10,20))
@@ -51,42 +39,32 @@ def main():
         # Timer checks
         if phraseTimer.check():
             try:
-                phrase = commands.phrase(info)
-                irc.msg(phrase)
+                commands.phrase(irc)
                 phraseTimer.minTimer(randint(10,20))
             except IOError as e:
                 print(e)
 
-        choiceMsg = crowd.check()
-        if choiceMsg != None and info.state:
+        #choiceMsg = crowd.check()
+        if crowd.check() != None and irc.info.state:
             irc.msg(choiceMsg)
 
         if roulette != None:
             ruMsg = roulette.check()
             if ruMsg == "KICK":
-                roulette.shoot(irc, info)
+                roulette.shoot(irc)
             elif ruMsg != None:
                 irc.msg(ruMsg)
         
         try:
             text = irc.incoming()
 
-            # These commands require direct access to the IRC class
-            # or other values that exist only in main
-            if text.command in ("!shutdown\r\n", "!shutdown"):
+            # These commands require access to other variables in main.
+            if (text.command in ("!shutdown\r\n", "!shutdown")
+                and text.nick in irc.owners):
                 irc.msg("Shutting down!")
                 irc.quitirc("I\'ve seen all I\'ll ever need")
                 print("Exiting program")
                 BOT_ON = False
-
-            if text.command == "!message":
-                try:
-                    filehandle.list_append('text/ircmsg', "%s: %s"
-                                           % (text.nick, text.argument))
-                except IOError as e:
-                    print (e)
-                    
-                irc.memo("Kueller917", "You have a message from %s" % nick)
                 
             if text.command == "!choice" and crowd.isActive():
                 crowd.addSong(text.argument)
@@ -95,11 +73,7 @@ def main():
                 roulette = timercommands.RussianRoulette(text.nick)
 
             # Other general commands are sent to the commands function
-            # Recieves a list of messages, print them all.
-            messages = commands.command_run(text, info)
-            if len(messages) > 0:
-                for message in messages:
-                    irc.msg(message)
+            commands.command_run(text, irc)
  
         except socket.timeout:
             None

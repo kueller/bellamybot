@@ -59,8 +59,8 @@ class RussianRoulette:
                     return "You got lucky this time."
 
     # Kicks user from channel. Requires the irc object to kick user.
-    def shoot(self, irc, info):
-        if self.gameNick in info.ops:
+    def shoot(self, irc):
+        if self.gameNick in irc.modlist:
             irc.msg("You're too important to die")
             return
         
