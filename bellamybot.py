@@ -1,5 +1,5 @@
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-BellamyBot v4.1.0 created by Kueller917.
+BellamyBot v4.1.1 created by Kueller917.
 Created for use with Python 3.
 Being created for personal use, the processes might not be the most efficient, 
 nor the simplest.
@@ -72,7 +72,7 @@ def main():
             if text.command in ("!ru-roulette\r\n", "!ru-roulette"):
                 roulette = timercommands.RussianRoulette(text.nick)
 
-            # Other general commands are sent to the commands function
+             # Other general commands are sent to the commands function
             commands.command_run(text, irc)
  
         except socket.timeout:

@@ -18,7 +18,8 @@ msg(), quitirc(), memo(), and kick() are also usable methods after join.
 
 import time
 import socket
-import filehandle
+from filehandle import get_list
+from filehandle import remove_nr
 
 # Class for parsing the IRC incoming messages.
 # Not every message will be associated with every variable
@@ -80,7 +81,7 @@ class BotInfo:
 
     def parseConfig(self, filename):
         try:
-            configLines = filehandle.get_list(filename)
+            configLines = get_list(filename)
         except IOError as e:
             raise IOError(e)
 
@@ -195,11 +196,19 @@ class IRCBot:
             if (text.split(' ')[3].startswith("+o") or
                 text.split(' ')[3].startswith("+a") or
                 text.split(' ')[3].startswith("+h")):
-                self.modlist.append(message.nick)
+                self.modlist.append(remove_nr(text.split(' ')[4]))
             elif text.split(' ')[3].startswith("+q"):
-                self.modlist.append(message.nick)
-                self.owners.append(message.nick)
-        
+                self.modlist.append(remove_nr(text.split(' ')[4]))
+                self.owners.append(remove_nr(text.split(' ')[4]))
+            elif (text.split(' ')[3].startswith("-o") or
+                text.split(' ')[3].startswith("-a") or
+                text.split(' ')[3].startswith("-h")):
+                self.modlist.remove(remove_nr(text.split(' ')[4]))
+            elif text.split(' ')[3].startswith("-q"):
+                self.modlist.remove(remove_nr(text.split(' ')[4]))
+                self.owners.remove(remove_nr(text.split(' ')[4]))
+
+                
         return message
 
     def msg(self, message):
@@ -223,11 +232,11 @@ class IRCBot:
         
         for name in names:
             if name[0] in ('%', '@', '&'):
-                self.modlist.append(filehandle.remove_nr(name[1:]))
-                self.userlist.append(filehandle.remove_nr(name[1:]))
+                self.modlist.append(remove_nr(name[1:]))
+                self.userlist.append(remove_nr(name[1:]))
             elif name[0] == '~':
-                self.modlist.append(filehandle.remove_nr(name[1:]))
-                self.owners.append(filehandle.remove_nr(name[1:]))
-                self.userlist.append(filehandle.remove_nr(name[1:]))
+                self.modlist.append(remove_nr(name[1:]))
+                self.owners.append(remove_nr(name[1:]))
+                self.userlist.append(remove_nr(name[1:]))
             else:
-                self.userlist.append(filehandle.remove_nr(name))
+                self.userlist.append(remove_nr(name))

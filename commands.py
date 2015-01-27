@@ -101,7 +101,7 @@ def command_run(text, irc):
 
     # All user commands
     if text.command in ("!bot\r\n", "!bot"):
-        statePhrase = ("BellamyBot version 4.1.0 created by Kueller917. Status: ")
+        statePhrase = ("BellamyBot version 4.1.1 created by Kueller917. Status: ")
         if irc.info.state:
             statePhrase = statePhrase + "ONLINE"
         else:
