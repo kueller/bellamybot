@@ -134,6 +134,8 @@ class IRCBot:
     modlist  = []    # All the elevated users, hop and higher.
     owners   = []    # All the owners (will typically be just one if any).
 
+    timers   = []    # All timers. Includes timer/function list elements.
+
     def __init__(self):
         self.chat = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.info = BotInfo()

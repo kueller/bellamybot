@@ -1,5 +1,5 @@
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-BellamyBot v4.1.1 created by Kueller917.
+BellamyBot v4.1.2 created by Kueller917.
 Created for use with Python 3.
 Being created for personal use, the processes might not be the most efficient, 
 nor the simplest.
@@ -30,7 +30,6 @@ def main():
     phraseTimer.minTimer(randint(10,20))
 
     crowd = CrowdChoice()
-    roulette = None
     
     BOT_ON = True
 
@@ -44,17 +43,10 @@ def main():
             except IOError as e:
                 print(e)
 
-        #choiceMsg = crowd.check()
-        if crowd.check() != None and irc.info.state:
+        choiceMsg = crowd.check()
+        if choiceMsg != None and irc.info.state:
             irc.msg(choiceMsg)
 
-        if roulette != None:
-            ruMsg = roulette.check()
-            if ruMsg == "KICK":
-                roulette.shoot(irc)
-            elif ruMsg != None:
-                irc.msg(ruMsg)
-        
         try:
             text = irc.incoming()
 
@@ -68,9 +60,6 @@ def main():
                 
             if text.command == "!choice" and crowd.isActive():
                 crowd.addSong(text.argument)
-
-            if text.command in ("!ru-roulette\r\n", "!ru-roulette"):
-                roulette = timercommands.RussianRoulette(text.nick)
 
              # Other general commands are sent to the commands function
             commands.command_run(text, irc)

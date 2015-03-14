@@ -14,11 +14,6 @@
 # URL for the source code. Defaults to http://waa.ai/4m8N
 #souce =
 
-# ops and owner can be a list, separated by commas (user1, user2, etc..)
-# No defaults, but program will still run without them, with a warning.
-#owner =
-#ops =
-
 # Whether the bot will be awake or asleep on startup. Defaults to sleep.
 # Can enter either "on" or "off" (without quotations)
 #state =

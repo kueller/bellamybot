@@ -101,7 +101,8 @@ def command_run(text, irc):
 
     # All user commands
     if text.command in ("!bot\r\n", "!bot"):
-        statePhrase = ("BellamyBot version 4.1.1 created by Kueller917. Status: ")
+        statePhrase = ("BellamyBot version %s created by Kueller917. Status: "
+                       % irc.info.version)
         if irc.info.state:
             statePhrase = statePhrase + "ONLINE"
         else:
@@ -212,10 +213,8 @@ def command_run(text, irc):
                 print(i)
             irc.msg(mansons)
 
+        if text.command in ("!ru-roulette\r\n", "!ru-roulette"):
+            timercommands.russian_roulette(irc, text.nick)
+            
         if text.command in ("!setgen\r\n", "!setgen"):
-            setlist = setlistgenerator.generate()
-            if setlist != None:
-                irc.msg(setlist['setlist'])
-                irc.msg(setlist['encore1'])
-                if setlist['encore2'] != None:
-                    irc.msg(setlist['encore2'])
+            setlistgenerator.generate(irc)

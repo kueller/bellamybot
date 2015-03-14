@@ -70,6 +70,17 @@ def song_undo():
         raise IOError("Error rewriting list for song_undo")
     return
 
+def create_set_string(songlist):
+    setstring = ''
+
+    for song in songlist:
+        if setstring == '':
+            setstring = filehandle.remove_nr(song)
+        else:
+            setstring = "%s, %s" % (setstring, filehandle.remove_nr(song))
+
+    return setstring
+
 # Prints any setlest fed into it and returns a string to be messaged
 # Very slow. Will fix in the future.
 # Passes on I/O Exceptions
@@ -83,30 +94,15 @@ def print_set(filename):
 
     if fileLength == 0:
         print('EMPTY SETLIST')
-        listFinal = ''
+        return ''
     else:
-        currentSong = filehandle.remove_nr(fileList[0])
-        listFinal = currentSong
-
-        # Extra formatting to print "previous setlist"
         if filename == 'text/previous':
             print('Printing PREVIOUS')
-            listFinal = "%s:" % (currentSong)
-
-            currentSong = filehandle.remove_nr(fileList[1])
-            listFinal = "%s %s" % (listFinal, currentSong)
-
-            startIndex = 2
+            return "%s: %s" % (filehandle.remove_nr(fileList[0]),
+                               create_set_string(fileList[1:]))
         else:
             print('Printing set')
-            startIndex = 1
-
-        # Add the rest of the songs to the print message.
-        for currentSong in fileList[startIndex:]:
-            currentSong = filehandle.remove_nr(currentSong)
-            listFinal = "%s, %s" % (listFinal, currentSong)
-            
-    return listFinal
+            return create_set_string(fileList)
 
 # Copies the gig and setlist to a previous setlist file
 # Then copies the previous setlist to an archive with the gig as the file name
