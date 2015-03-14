@@ -9,7 +9,6 @@ Included should be:
     crowdchoice.py
     filehandle.py
     musegames.py
-    setgenlib.py
     setlistfm.py
     setlistgenerator.py
     timercommands.py
