@@ -13,6 +13,7 @@ do all the connections.
 Use incoming() to receive text which will return an IRCMessage instance.
 
 msg(), quitirc(), memo(), and kick() are also usable methods after join.
+Note: Depends on filehandle.py.
 
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
@@ -71,11 +72,13 @@ class BotInfo:
     green      = False
     greenNick  = None
 
+    version    = None
     state      = None
 
     def __init__(self):
         self.mbid = "9c9f1380-2516-4fc9-a3e6-f9f61941d090"
         self.sourceCode = "http://waa.ai/4m8N"
+        self.version = "4.1.2"
         self.joinmsg = False
         self.state = False
 
@@ -133,8 +136,6 @@ class IRCBot:
     userlist = []    # All the users in the channel.
     modlist  = []    # All the elevated users, hop and higher.
     owners   = []    # All the owners (will typically be just one if any).
-
-    timers   = []    # All timers. Includes timer/function list elements.
 
     def __init__(self):
         self.chat = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
