@@ -35,13 +35,21 @@ def command_run(text, irc):
             irc.msg("Sleep mode activated")
         
         if text.command == "!joinmsg":
-            if text.argument in ("on\r\n", "!on"):
+            if text.argument in ("on\r\n", "on"):
                 irc.info.joinmsg = True
                 print("Join messages ON")
-            elif text.argument in ("off\r\n", "!on"):
+            elif text.argument in ("off\r\n", "off"):
                 irc.info.joinmsg = False
                 print("Join messages OFF")
 
+        if text.command == "!gamemode":
+            if text.argument in ("on\r\n", "!on"):
+                irc.info.games = True
+                print("Game mode ON")
+            elif text.argument in ("off\r\n", "off"):
+                irc.info.games = False
+                print("Game mode OFF")
+                
         if text.command == "!setgig":
             try:
                 filehandle.clear_file('text/gig')
@@ -98,7 +106,7 @@ def command_run(text, irc):
             except RuntimeError as r:
                 print(r)
             irc.msg(response)
-
+            
     # All user commands
     if text.command in ("!bot\r\n", "!bot"):
         statePhrase = ("BellamyBot version %s created by Kueller917. Status: "
@@ -155,66 +163,67 @@ def command_run(text, irc):
 
         if text.command in ("!commands\r\n", "!commands"):
             irc.msg("Use !gig, !setlist, and !previous for information "
-                    "on tonight's concert and prior. Try !setfm, !rotation, "
+                    "on tonight's concert and prior. Try !setfm, "
                     "!closer, !opener, !manson, !roulette, !setgen, "
                     "!ru-roulette, and !realfan for fun.")
 
-        # Games
-        if text.command in ("!closer\r\n", "!closer"):
-            try:
-                closer = musegames.random_game('text/gigcloser')
-            except IOError as e:
-                print(e)
-            irc.msg("%s\'s game has closed with %s!" % (text.nick, closer))
+        if irc.info.games:
+            # Games
+            if text.command in ("!closer\r\n", "!closer"):
+                try:
+                    closer = musegames.random_game('text/gigcloser')
+                except IOError as e:
+                    print(e)
+                irc.msg("%s\'s game has closed with %s!" % (text.nick, closer))
 
-        if text.command in ("!opener\r\n", "!opener"):
-            try:
-                opener = musegames.random_game('text/opener')
-            except IOError as e:
-                print(e)
-            irc.msg("%s\'s game has opened with %s!" % (text.nick, opener))
+            if text.command in ("!opener\r\n", "!opener"):
+                try:
+                    opener = musegames.random_game('text/opener')
+                except IOError as e:
+                    print(e)
+                irc.msg("%s\'s game has opened with %s!" % (text.nick, opener))
 
-        if text.command in ("!realfan\r\n", "!realfan"):
-            fan = randint(0,1)
-            if fan:
-                irc.msg("%s is a REAL FAN. Good for you." % text.nick)
-            else:
-                irc.msg("%s is not a REAL FAN. Go away." % text.nick)
-
-        if text.command in ("!roulette\r\n", "!roulette"):
-            output = musegames.T2L_roulette()
-            if output != -1:
-                irc.msg(output)
-            else:
-                irc.info.green = True
-                irc.info.greenNick = text.nick
-                irc.msg("You landed on GREEN! Type !green to get your song")
-
-        if text.command in ("!green\r\n", "!green"):
-            if irc.info.green:
-                if text.nick == irc.info.greenNick:
-                    irc.info.green = False
-                    irc.info.greenNick = None
-                    irc.msg(musegames.roulette_green(text.nick))
+            if text.command in ("!realfan\r\n", "!realfan"):
+                fan = randint(0,1)
+                if fan:
+                    irc.msg("%s is a REAL FAN. Good for you." % text.nick)
                 else:
-                    irc.msg("You did not land on green.")
+                    irc.msg("%s is not a REAL FAN. Go away." % text.nick)
 
-        if text.command in ("!setfm\r\n", "!setfm"):
-            setlist = setlistfm.get_setlist(irc.info.mbid)
-            for messagePart in setlist:
-                irc.msg(messagePart)
+            if text.command in ("!roulette\r\n", "!roulette"):
+                output = musegames.T2L_roulette()
+                if output != -1:
+                    irc.msg(output)
+                else:
+                    irc.info.green = True
+                    irc.info.greenNick = text.nick
+                    irc.msg("You landed on GREEN! Type !green to get your song")
 
-        if text.command in ("!manson\r\n", "!manson"):
-            try:
-                mansons = musegames.manson_game(text.nick)
-            except IOError as e:
-                print(e)
-            except IndexError as i:
-                print(i)
-            irc.msg(mansons)
+            if text.command in ("!green\r\n", "!green"):
+                if irc.info.green:
+                    if text.nick == irc.info.greenNick:
+                        irc.info.green = False
+                        irc.info.greenNick = None
+                        irc.msg(musegames.roulette_green(text.nick))
+                    else:
+                        irc.msg("You did not land on green.")
 
-        if text.command in ("!ru-roulette\r\n", "!ru-roulette"):
-            timercommands.russian_roulette(irc, text.nick)
-            
-        if text.command in ("!setgen\r\n", "!setgen"):
-            setlistgenerator.generate(irc)
+            if text.command in ("!setfm\r\n", "!setfm"):
+                setlist = setlistfm.get_setlist(irc.info.mbid)
+                for messagePart in setlist:
+                    irc.msg(messagePart)
+
+            if text.command in ("!manson\r\n", "!manson"):
+                try:
+                    mansons = musegames.manson_game(text.nick)
+                except IOError as e:
+                    print(e)
+                except IndexError as i:
+                    print(i)
+                irc.msg(mansons)
+
+            if text.command in ("!ru-roulette\r\n", "!ru-roulette"):
+                timercommands.russian_roulette(irc, text.nick)
+
+            if text.command in ("!setgen\r\n", "!setgen"):
+                setlistgenerator.generate(irc)

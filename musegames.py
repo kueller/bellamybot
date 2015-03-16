@@ -90,5 +90,5 @@ def manson_game(nick):
                      % (nick, mansonRand, mansonCount))
 
     elif mansonAddDec == 1:           
-        return ("%s ganed %d Mansons. Your total number of Mansons is now %d"
+        return ("%s gained %d Mansons. Your total number of Mansons is now %d"
                       % (nick, mansonRand, mansonCount))

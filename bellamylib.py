@@ -73,14 +73,17 @@ class BotInfo:
     greenNick  = None
 
     version    = None
+
+    games      = None
     state      = None
 
     def __init__(self):
         self.mbid = "9c9f1380-2516-4fc9-a3e6-f9f61941d090"
         self.sourceCode = "http://waa.ai/4m8N"
-        self.version = "4.1.2"
+        self.version = "4.1.3"
         self.joinmsg = False
-        self.state = False
+        self.games   = True
+        self.state   = False
 
     def parseConfig(self, filename):
         try:
@@ -115,6 +118,11 @@ class BotInfo:
                     self.joinmsg = True
                 elif value == "off":
                     self.joinmsg = False
+            elif arg == "gamemode":
+                if value == "on":
+                    self.games = True
+                elif value == "off":
+                    self.games = False
             elif arg == "state":
                 if value == "on":
                     self.state = True
@@ -195,6 +203,8 @@ class IRCBot:
             self.userlist.remove(text.split(' ')[3])
         elif message.msgtype == "353":
             self.setUserList(text)
+        elif message.msgtype == "NICK":
+            self.userlist[self.userlist.index(message.nick)] = remove_nr(message.command)
         elif message.msgtype == "MODE":
             if (text.split(' ')[3].startswith("+o") or
                 text.split(' ')[3].startswith("+a") or

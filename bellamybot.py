@@ -1,5 +1,5 @@
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-BellamyBot v4.1.2 created by Kueller917.
+BellamyBot v4.1.3 created by Kueller917.
 Created for use with Python 3.
 Being created for personal use, the processes might not be the most efficient, 
 nor the simplest.
@@ -27,7 +27,7 @@ def main():
     
     # Repeating timer to say a random phrase every 10-20 minutes
     phraseTimer = Timer()
-    phraseTimer.minTimer(randint(10,20))
+    phraseTimer.minTimer(randint(10,15))
 
     crowd = CrowdChoice()
     

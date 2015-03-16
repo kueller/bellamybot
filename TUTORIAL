@@ -35,8 +35,7 @@ Included should be:
 The python files are the program and its functions. The main program is in 
 bellamybot.py. The nickserv password is not included, therefore some functions
 that require op may not work. Feel free to change the nick to one that works
-for you if I have not given you the password myself. This variable is on
-line 32 of bellamybot.py.
+for you if I have not given you the password myself using the config file.
 
 LICENSE
 As per the license, you may do whatever the fuck you want with this. More info
@@ -130,6 +129,17 @@ to turn off join messages if the join rate gets too high. Toggle by using
     
 ARG can be either "on" or "off", without quotations.
 By default, join messages are off. This can be changed in the config file.
+
+GAME MODE
+The bot games can be turned on or off without having to change the entire
+bot state from awake or asleep. This can allow for all functioning timed
+phrases and non-op setlist commands while preventing possible flooding due
+to overuse of the games. The syntax is the same as for join messages.
+
+    !gamemode ARG
+
+Where ARG can be either "on" or "off" without quotations. The default
+can be changed in the config file.  
 
 SETLIST CONTROLS
 The main purpose of BellamyBot is to control and handle Muse setlists. These 

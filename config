@@ -20,3 +20,6 @@
 
 # Whether bot has join messages on startup. Defaults to off. Same as state.
 #joinmsg =
+
+# If games are allowed by default or not. Defaults to on. Same as state.
+# gamemode =
