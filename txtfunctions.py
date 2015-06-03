@@ -4,10 +4,14 @@ import filehandle
 # Allows for replacement of acronym entries
 def acronym_replace(entry):
     entry = filehandle.remove_nr(entry)
-    if entry == 'B&H':
+    if entry == 'AP':
+        entry = 'Apocalypse Please'
+    elif entry == 'B&H':
         entry = 'Butterflies & Hurricanes'
     elif entry == 'CoD':
         entry = 'City of Delusion'
+    elif entry == 'DI':
+        entry = 'Dead Inside'
     elif entry == 'FAWY':
         entry = 'Falling Away With You'
     elif entry == 'HTAILY':
@@ -20,13 +24,15 @@ def acronym_replace(entry):
         entry = 'Knights of Cydonia'
     elif entry == 'MotP':
         entry = 'Map of the Problematique'
+    elif entry == 'MM':
+        entry = 'Muscle Museum'
     elif entry == 'NSC':
         entry = 'Neutron Star Collision'
     elif entry == 'PiB':
         entry = 'Plug In Baby'
     elif entry == 'RBS':
         entry = 'Ruled By Secrecy'
-    elif entry == 'SMBH':
+    elif (entry == 'SMBH' or entry == 'Supermassive'):
         entry = 'Supermassive Black Hole'
     elif entry == 'SS':
         entry = 'Stockholm Syndrome'
@@ -223,8 +229,7 @@ def insert_song(argument):
 
     if length != 2:
         print("Invalid replacement arguments")
-        outputMsg = "ERROR: Invalid number of arguments."
-        return outputMsg
+        return "ERROR: Invalid number of arguments."
     else:
         try:
             setlist = filehandle.get_list('text/setlist')
@@ -245,8 +250,7 @@ def insert_song(argument):
             compared = True
         except:
             print('Compare Error: Song not found')
-            outputMsg = "ERROR: Could not find the song to insert before."
-            return outputMsg
+            return "ERROR: Could not find the song to insert before."
 
         if compared:
             try:

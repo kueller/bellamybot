@@ -197,6 +197,25 @@ Example:
 
     !setlist                    
         output: "Supremacy, Panic Station"
+<<<<<<< HEAD
+
+EXPANSION CHECKING: If you are unsure of what expands to what, besides
+looking at the function in txtfunctions.py you can also use the command
+!exp as follows
+
+    !exp Some argument
+
+BellamyBot will return the possible expansion for that phrase, or notify
+that there is no expansion if one does not exist.
+
+Example:
+   !exp Stockholm
+        output: "There is no expansion for Stockholm"
+
+   !exp SS
+        output: "SS expands to Stockholm Syndrome"
+=======
+>>>>>>> 64707038fcff2a0d85ca43c93205c9e61e49ee80
     
 REPLACE SONG: If a mistaken song is found and it is not the latest song, 
 instead of using undo multiple times and rewriting the rest of the set, 
@@ -257,6 +276,21 @@ Example:
 
     !setlist                    
         output: "Supermassive Black Hole, Survival" 
+<<<<<<< HEAD
+
+CHECK EXPANSIONS: BellamyBot expands certain acronyms. If
+you are unsure if an acronym is expanded use !exp.
+
+Example:
+    !exp AP
+        output: "AP expands to Apocalypse Please"
+
+    !exp ASDF
+        output: "There is no expansion for ASDF"
+
+Remember the acronyms are case sensitive.
+=======
+>>>>>>> 64707038fcff2a0d85ca43c93205c9e61e49ee80
     
 CLEAR SET: When everything is done, the setlist can be emptied by the clear 
 set command.

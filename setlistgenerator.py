@@ -3,12 +3,7 @@ from filehandle import get_list
 from txtfunctions import create_set_string
 
 # Setlist generator
-# 77 songs                      'songs'
-# 8 openers                     'opener'
-# 15 piano songs                'piano'
-# 15 set closers                'setcloser'
-# 8 gig closers                 'gigcloser'
-
+#
 # General set structure:
 #
 # Opener

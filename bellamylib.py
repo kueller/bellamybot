@@ -1,10 +1,11 @@
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 The main library for running the IRC bot. The IRCBot class will be the bot
-itself. The settings are run from the config file stored in text/config
-(relative to the current folder). The included config contains more details
-about its formatting. A simple usage of the IRCBot class would be
+itself. The settings can be done manually or read from a config file. The
+example config file shows some of the options. A simple implementation
+of the bot would be:
 
    myBot = IRCBot()
+   myBot.setInfoFromConfig('config')
    myBot.start()
 
 From there the bot will read the configuration from the config file and
@@ -12,53 +13,59 @@ do all the connections.
 
 Use incoming() to receive text which will return an IRCMessage instance.
 
-msg(), quitirc(), memo(), and kick() are also usable methods after join.
-Note: Depends on filehandle.py.
-
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
-import time
 import socket
-from filehandle import get_list
-from filehandle import remove_nr
 
 # Class for parsing the IRC incoming messages.
 # Not every message will be associated with every variable
 class IRCMessage:
-    nick     = None       # Nick of the user that sent the message.
-    msgtype  = None       # The command part of the message.
-    chan     = None       # Channel the message is sent to.
-    msg      = None       # The full parameters of the command.
+    message   = ''
+    prefix    = ''
 
-    # Meant for use in channel PRIVMSG to handle bot commands.
-    command  = None       # The first word in the parameters
-    argument = None       # All following words (if any). A single string.
+    nick      = ''
+    host      = ''
+    serv      = ''
+    
+    IRCcmd    = ''
+    IRCparams = []
+    body      = ''
+
+    command   = ''
+    argument  = ''
 
     def __init__(self, text):
-        self.nick = text.split('!')[0].replace(':','')
+        if text.startswith(':'):
+            if len(text.split(' ')) < 2:
+                return
+            
+            self.message = text.partition(':')[2]
+            self.prefix  = self.message.split()[0]
 
-        if len(text.split(' ')) >= 2:
-            self.msgtype = text.split(' ')[1]
+            if self.prefix.find('!') != -1 and self.prefix.find('@') != -1:
+                self.nick = self.prefix.split('!')[0]
+                self.host = self.prefix.split('!')[1].split('@')[0]
+                self.serv = self.prefix.split('!')[1].split('@')[0]
 
-        if len(text.split(' ')) >= 3:
-            self.chan = text.split(' ')[2]
+            self.IRCcmd = self.message.split()[1]
+            
+            self.IRCparams = []
+            for token in self.message.split(' ')[2:]:
+                if token.startswith(':'):
+                    break
+                self.IRCparams.append(token)
 
-        if len(text.split(':')) >= 3:
-            self.msg = text.split(':')[2]
-
-        if self.msg != None:
-            self.command = self.msg.split(' ')[0]
-        else:
-            self.argument = text.split(' ')[len(text.split(' ')) - 1]
-
-        if self.msg != None and len(self.msg.partition(' ')) >= 3:
-            self.argument = self.msg.partition(' ')[2]
+            if len(text.split(':')) > 2:
+                self.body     = text.split(':')[2]
+                self.command  = self.body.split(' ')[0]
+                if len(self.body.split(' ')) > 1:
+                    self.argument = self.body.partition(' ')[2]
 
 # General needed information about the bot's state and other small strings
 # This is where the data from the config file goes
 # An instance of BotInfo is made inside the IRCBot class. There is no need
 # to make one separately.
-class BotInfo:
+class _BotInfo:
     server     = None
     channel    = None
     nick       = None
@@ -80,16 +87,18 @@ class BotInfo:
     def __init__(self):
         self.mbid = "9c9f1380-2516-4fc9-a3e6-f9f61941d090"
         self.sourceCode = "http://waa.ai/4m8N"
-        self.version = "4.1.3"
+        self.version = "5.0.0"
         self.joinmsg = False
         self.games   = True
         self.state   = False
 
     def parseConfig(self, filename):
         try:
-            configLines = get_list(filename)
-        except IOError as e:
-            raise IOError(e)
+            with open(filename, 'r') as f:
+                configLines = f.read().splitlines()
+                configLines = list(configLines)
+        except IOError:
+            raise IOError("Error opening " + filename)
 
         for line in configLines:
             if line.startswith("#"):
@@ -138,118 +147,226 @@ class BotInfo:
             
 # General class for the IRC connection. Contains all join and messaging commands
 class IRCBot:
-    chat = None      # Socket connection.
-    info = None      # BotInfo instance.
+    __chat = None    # Socket connection.
+    __info = None    # BotInfo instance.
 
     userlist = []    # All the users in the channel.
     modlist  = []    # All the elevated users, hop and higher.
     owners   = []    # All the owners (will typically be just one if any).
 
     def __init__(self):
-        self.chat = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.info = BotInfo()
-        self.info.parseConfig('config')
-        self.info.verifyConfig()
+        self.__chat = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.__info = _BotInfo()
 
+    def setInfoFromConfig(self, filename):
+        self.__info.parseConfig(filename)
+
+    # The 'getter' functions for interfacing with the info instance
+    def currentServer(self):
+        return self.__info.server
+    def channel(self):
+        return self.__info.channel
+    def nick(self):
+        return self.__info.nick
+    def mbid(self):
+        return self.__info.mbid
+    def source(self):
+        return self.__info.sourceCode
+    def joinmsg(self):
+        return self.__info.joinmsg
+    def greenActive(self):
+        return self.__info.green
+    def checkGreen(self, nick):
+        return self.__info.greenNick == nick
+    def version(self):
+        return self.__info.version
+    def isAwake(self):
+        return self.__info.state
+    def gamesActive(self):
+        return self.__info.games
+
+    # 'Setter' functions for the info instance.
+    def greenNick(self, nick):
+        self.__info.greenNick = nick
+    def greenOn(self):
+        self.__info.green = True
+    def greenOff(self):
+        self.__info.green = False
+    def wake(self):
+        self.__info.state = True
+    def sleep(self):
+        self.__info.state = False
+    def activateGames(self):
+        self.__info.games = True
+    def deactivateGames(self):
+        self.__info.games = False
+    def activateJoinMsg(self):
+        self.__info.joinmsg = True
+    def deactivateJoinMsg(self):
+        self.__info.joinmsg = False
+        
     def start(self):
-        print("Connecting to %s." % self.info.server)
+        self.__info.verifyConfig()
         
-        self.connect(self.info.server)
-        self.setuser(self.info.nick, "Hello")
-        self.setnick(self.info.nick)
-        self.identify(self.info.password)
-
-        print("Bot nick set as %s." % self.info.nick)
-        print("Joining channel %s." % self.info.channel)
-
-        self.join(self.info.channel)
-        time.sleep(5)
-
-        # 5 second wait ensures call to NAMES will be on its own line.
-        self.chat.send(("NAMES %s\r\n" % self.info.channel).encode('utf-8'))
+        print("Connecting to %s." % self.__info.server)
         
-    def connect(self, server):
-        self.chat.connect((server, 6667))
-        self.chat.settimeout(1)
+        self.__connectServer(self.__info.server)
+        self.__identify(self.__info.password)
+        self.__connectNick(self.__info.nick)
+        self.__connectUser(self.__info.nick, "Hello")
 
-    def setuser(self, name, message):
-        self.chat.send(("USER %s botnick botnick :%s\r\n" % (name, message)).encode('utf-8'))
-    def setnick(self, nick):
-        self.chat.send(("NICK %s\r\n" % nick).encode('utf-8'))
-    def identify(self, password):
-        self.chat.send(("PRIVMSG nickserv :identify %s\r\n" % password).encode('utf-8'))
-    def join(self, channel):
-        self.chat.send(("JOIN %s\r\n" % channel).encode('utf-8'))
+        # Here we wait until the server prompts to enter the password.
+        unregistered = True
+        while unregistered:
+            text = ''
+            try:
+                text = self.__getText()
+                print(text)
+            except socket.timeout:
+                None
 
-    def getText(self):
-        return self.chat.recv(2048).decode('utf-8')
+            if text.lower().find('identify') != -1:
+                unregistered = False
+
+        self.__identify(self.__info.password)
+        print("Bot nick set as %s." % self.__info.nick)
+        print("Joining channel %s." % self.__info.channel)
+
+        self.__join(self.__info.channel)
+
+    # Channel setup.
+    def setUser(self, nick):
+        self.__info.nick = nick
+    def setChannel(self, chan):
+        self.__info.channel = chan
+    def setServer(self, serv):
+        self.__info.server = serv
+    def setPassword(self, password):
+        self.__info.password = password
+
+    # Internal connection initializations.
+    def __connectServer(self, server):
+        self.__chat.connect((server, 6667))
+        self.__chat.settimeout(1)
+    def __connectUser(self, name, message):
+        self.__chat.send(("USER %s botnick botnick :%s\r\n" % (name, message)).encode('utf-8'))
+    def __connectNick(self, nick):
+        self.__chat.send(("NICK %s\r\n" % nick).encode('utf-8'))
+    def __identify(self, password):
+        self.__chat.send(("PRIVMSG nickserv :identify %s\r\n" % password).encode('utf-8'))
+    def __join(self, channel):
+        self.__chat.send(("JOIN %s\r\n" % channel).encode('utf-8'))
+
+    def __getText(self):
+        return self.__chat.recv(2048).decode('utf-8')
 
     # Formats and prepares an IRCMessage instance to return.
     # Also updates the userlists if applicable.
     def incoming(self):
-        text = self.getText()
-        print(text)
+        try:
+            text = self.__getText()
+        except socket.timeout:
+            text = ''
+            return IRCMessage(text)
+        try:
+            print(text)
+        except UnicodeEncodeError:
+            None
+            
+        text = text.strip()
         
         if text.find("PING") != -1:
-            self.chat.send(("PONG %s\r\n" % (text.split()[1])).encode('utf-8'))
+            self.__chat.send(("PONG %s\r\n" % (text.split()[1])).encode('utf-8'))
 
-        message = IRCMessage(text)
+        for line in text.split('\n'):
+            message = IRCMessage(line)
+            if message.IRCcmd == '353':
+                self.__setUserList(message)
+            elif message.IRCcmd == 'PART' or message.IRCcmd == 'QUIT':
+                self.__removeUser(message.nick)
+            elif message.IRCcmd == 'JOIN':
+                self.__appendUser(message.nick)
+            elif message.IRCcmd == 'MODE':
+                self.__updateUser(message.IRCparams)
 
-        if message.msgtype == "JOIN":
-            self.userlist.append(message.nick)
-        elif message.msgtype in ("PART", "QUIT"):
-            self.userlist.remove(message.nick)
-        elif message.msgtype == "KICK":
-            self.userlist.remove(text.split(' ')[3])
-        elif message.msgtype == "353":
-            self.setUserList(text)
-        elif message.msgtype == "NICK":
-            self.userlist[self.userlist.index(message.nick)] = remove_nr(message.command)
-        elif message.msgtype == "MODE":
-            if (text.split(' ')[3].startswith("+o") or
-                text.split(' ')[3].startswith("+a") or
-                text.split(' ')[3].startswith("+h")):
-                self.modlist.append(remove_nr(text.split(' ')[4]))
-            elif text.split(' ')[3].startswith("+q"):
-                self.modlist.append(remove_nr(text.split(' ')[4]))
-                self.owners.append(remove_nr(text.split(' ')[4]))
-            elif (text.split(' ')[3].startswith("-o") or
-                text.split(' ')[3].startswith("-a") or
-                text.split(' ')[3].startswith("-h")):
-                self.modlist.remove(remove_nr(text.split(' ')[4]))
-            elif text.split(' ')[3].startswith("-q"):
-                self.modlist.remove(remove_nr(text.split(' ')[4]))
-                self.owners.remove(remove_nr(text.split(' ')[4]))
-
-                
+        # Only returns the last message for checking
         return message
-
+    
+    # Bot interaction commands.
     def msg(self, message):
-        self.chat.send(("PRIVMSG %s :%s\r\n" % (self.info.channel, message)).encode('utf-8'))
+        self.__chat.send(("PRIVMSG %s :%s\r\n" % (self.__info.channel, message)).encode('utf-8'))
     def kick(self, nick,  message):
-        self.chat.send(("KICK %s %s :%s\r\n" % (self.info.channel, nick, message)).encode('utf-8'))
+        self.__chat.send(("KICK %s %s :%s\r\n" % (self.__info.channel, nick, message)).encode('utf-8'))
     def quitirc(self, message):
-        self.chat.send(("QUIT :Quit %s\r\n" % message).encode('utf-8'))
+        self.__chat.send(("QUIT :Quit %s\r\n" % message).encode('utf-8'))
     def memo(self, nick, message):
-        self.chat.send(("PRIVMSG memoserv :send %s %s\r\n" 
+        self.__chat.send(("PRIVMSG memoserv :send %s %s\r\n" 
                         % (nick, message)).encode('utf-8'))
+    def action(self, message):
+        self.msg("\x01ACTION %s" % message)
 
-    def setUserList(self, text):
-        if len(text.split(' ')) < 6:
+    # Userlist commands
+    def __appendUser(self, nick):
+        if len(nick) < 1:
             return
-        if text.split(' ')[1] != "353":
-            return
-
-        print("Generating user list...")
-        names = text.split(":")[2].split(' ')
         
-        for name in names:
-            if name[0] in ('%', '@', '&'):
-                self.modlist.append(remove_nr(name[1:]))
-                self.userlist.append(remove_nr(name[1:]))
-            elif name[0] == '~':
-                self.modlist.append(remove_nr(name[1:]))
-                self.owners.append(remove_nr(name[1:]))
-                self.userlist.append(remove_nr(name[1:]))
-            else:
-                self.userlist.append(remove_nr(name))
+        nick = nick.strip()
+        
+        if nick[0] in ('%', '@', '&'):
+            nick = nick[1:]
+            if nick not in self.modlist:
+                self.modlist.append(nick)
+                print('Added %s to modlist.' % nick)
+        elif nick[0] == '~':
+            nick = nick[1:]
+            if nick not in self.modlist or nick not in self.owners:
+                self.modlist.append(nick)
+                self.owners.append(nick)
+                print('Added %s as owner.' % nick)
+
+        if nick not in self.userlist:
+            self.userlist.append(nick)
+            print('Added %s to user list.' % nick)
+
+    def __removeUser(self, nick):
+        nick = nick.strip()
+        
+        if nick in self.userlist:
+            self.userlist.remove(nick)
+            print('Removed %s from user list.' % nick)
+        if nick in self.modlist:
+            self.modlist.remove(nick)
+            print('Removed %s from modlist.' % nick)
+        if nick in self.owners:
+            self.owners.remove(nick)
+            print('Removed %s from owners.' % nick)
+
+    def __updateUser(self, IRCparams):
+        if len(IRCparams) < 3:
+            return
+
+        modeset = IRCparams[1]
+        nick    = IRCparams[2].strip()
+
+        if modeset.startswith('+'):
+            if 'o' in modeset or 'a' in modeset or 'h' in modeset:
+                if nick not in self.modlist:
+                    self.modlist.append(nick)
+                    print('Updated %s to modlist.' % nick)
+            if 'q' in modeset:
+                if nick not in self.owners:
+                    self.owners.append(nick)
+                    print('Updated %s to owner.' % nick)
+        elif modeset.startswith('-'):
+            if 'o' in modeset or 'a' in modeset or 'h' in modeset:
+                if nick in self.modlist:
+                    self.modlist.remove(nick)
+                    print('Update/removed %s from modlist.' % nick)
+            elif 'q' in modeset:
+                if nick in self.owners:
+                    self.owners.remove(nick)
+                    print('Updated/removed %s from owners.' % nick)
+
+    def __setUserList(self, text):
+        for nick in text.body.split(' '):
+            self.__appendUser(nick)
