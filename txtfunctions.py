@@ -95,7 +95,7 @@ def print_set(filename):
         fileList = filehandle.get_list(filename)
     except IOError:
         raise IOError("Error opening file to print")
-    
+
     fileLength = len(fileList)
 
     if fileLength == 0:
@@ -117,6 +117,7 @@ def print_set(filename):
 def set_previous():
     setlist = filehandle.get_list('text/setlist')
     gig = filehandle.get_list('text/gig')
+    tour = filehandle.get_list('text/tour')
 
     print('GIG: %s' % (gig))
 
@@ -130,6 +131,7 @@ def set_previous():
         return outputString
 
     gig = gig[0]
+    tour = tour[0].strip()
 
     sys.stdout.write('FORMATTING GIG NAME...')
     try:
@@ -152,7 +154,7 @@ def set_previous():
 
     sys.stdout.write('Writing previous setlist...')
 
-    archivePath = "GigArchive/" + gigFileName
+    archivePath = "GigArchive/" + tour + "/" + gigFileName
 
     gig = [gig]
 

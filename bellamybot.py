@@ -1,5 +1,5 @@
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-BellamyBot v4.1.3 created by Kueller917.
+BellamyBot v5.1.0 created by Kueller917.
 Created for use with Python 3.
 Being created for personal use, the processes might not be the most efficient, 
 nor the simplest.

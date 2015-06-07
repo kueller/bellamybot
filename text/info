@@ -1,0 +1,34 @@
+!wake:Wake me up inside.
+!sleep:I go to sleep.
+!joinmsg:Use 'on' or 'off', controls greeting messages.
+!gamemode:Whether or not games commands are usable.
+!setgig:Set the gig. Use YYY/MM/DD VENUE/FESTIVAL, CITY/STATE/PROVINCE, COUNTRY(CODE)
+!settour:Sets the current tour. Use ALBUMNUM ALBUMNAME
+!add:Adds a song to the setlist.
+!exp:Checks if an acronym is expandable.
+!clearset:Self-explanatory.
+!undo:Removed the last song. Probably should be called "!pop".
+!insert:Inserts a song before a queried song in the setlist.
+!replace:Replaces a queried song with a new song in the setlist.
+!delete:Deletes the queried songs from the setlist.
+!setprevious:Adds the current setlist to the archive.
+!bot:Information about myself.
+!gig:Current gig.
+!message:Leave a memo to the owner.
+!source:Link to the BellamyBot source code.
+!setlist:The current setlist.
+!previous:The last setlist.
+!count:Number of times the queried song has been played.
+!lastplayed:Last gig the queried song has been played.
+!findset:Enter any search term to get a list of matching gigs. See also !loadset.
+!loadset:Displays an existing setlist from the archive. Takes only the gig date and must be in the form YYY/MM/DD. See also !findset.
+!info:Info on existing commands.
+!commands:The command listing.
+!closer:Gives a random set closer.
+!opener:Gives a random set opener.
+!realfan:Coin toss. Are you a real fan?
+!roulette:The 2nd Law tour roulette simmulator.
+!green:See !roulette.
+!setfm:Gets a random setlist from setlist.fm.
+!ru-roulette:A real game of Russian Roulette. Feeling lucky?
+!setgen:Random setlist generator.

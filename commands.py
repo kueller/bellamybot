@@ -1,6 +1,7 @@
 import musegames
 import setlistfm
 import filehandle
+import gigarchive
 import txtfunctions
 import timercommands
 import setlistgenerator
@@ -55,6 +56,13 @@ def command_run(text, irc):
             try:
                 filehandle.clear_file('text/gig')
                 filehandle.list_append('text/gig', text.argument)
+            except IOError as e:
+                print(e)
+
+        elif text.command == "!settour":
+            try:
+                filehandle.clear_file('text/tour')
+                filehandle.list_append('text/tour', text.argument)
             except IOError as e:
                 print(e)
 
@@ -164,17 +172,42 @@ def command_run(text, irc):
             irc.msg(setmsg)
 
         elif text.command in ("!previous\r\n", "!previous"):
+            gigarchive.print_recent_setlist(irc)
+
+        elif text.command == "!count":
+            song = txtfunctions.acronym_replace(text.argument)
+            count = gigarchive.song_count(song)
+            irc.msg("%s has been played %d times." % (song, count))
+
+        elif text.command == "!lastplayed":
+            song = txtfunctions.acronym_replace(text.argument)
+            gigarchive.last_played(irc, song)
+
+        elif text.command == "!findset":
+            gigarchive.find_setlist(irc, text.argument.strip())
+
+        elif text.command == "!loadset":
+            date = text.argument.strip()
+            setlist = gigarchive.print_set_by_date(irc, date)
+
+        elif text.command == "!info":
             try:
-                previous = txtfunctions.print_set('text/previous')
-            except IOError as e:
-                print(e)
-            irc.msg(previous)
+                infolist = filehandle.get_list('text/info')
+            except IOError:
+                print('Error opening file info')
+                return
+
+            command = text.argument.strip()
+            for line in infolist:
+                if line.split(':')[0] == command:
+                    irc.msg(line.split(':')[1])
 
         elif text.command in ("!commands\r\n", "!commands"):
-            irc.msg("Use !gig, !setlist, and !previous for information "
-                    "on tonight's concert and prior. Try !setfm, "
-                    "!closer, !opener, !manson, !roulette, !setgen, "
-                    "!ru-roulette, and !realfan for fun.")
+            irc.msg("Set commands: !gig, !setlist, !previous, !findset, "
+                    "!loadset, !count, !lastplayed.")
+            irc.msg("Other: !bot, !source, !closer, !opener, !realfan, "
+                    "!roulette, !setfm, !ru-roulette, !setgen. Use !info "
+                    "for a description of any command.")
 
         if irc.gamesActive():
             # Games

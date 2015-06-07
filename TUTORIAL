@@ -8,6 +8,7 @@ Included should be:
     commands.py
     crowdchoice.py
     filehandle.py
+    gigarchive.py
     musegames.py
     setlistfm.py
     setlistgenerator.py
@@ -18,6 +19,7 @@ Included should be:
     crowd
     gig
     gigcloser
+    info
     ircmsg
     manson
     opener
@@ -26,6 +28,8 @@ Included should be:
     setcloser
     setlist
     songs
+    tour
+    twitter
 
     config
     LICENSE
@@ -335,6 +339,12 @@ The following commands are state dependent:
                     Also tells if setlist is empty.
     !previous       Lists the previous setlist from the .previous file.
     !commands       Lists the available commands. 
+
+    !findset        Searches the GigArchive for gigs queried by the 
+                    command
+    !count          Gets the number of times a queried song was played.
+    !loadset        Displays a setlist by date.
+    !info           Gets info on any command. See text/info.
     
 *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *
 
