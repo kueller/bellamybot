@@ -1,40 +1,6 @@
 BellamyBot, created by Kueller917 from the Muse Board.
 
 http://board.muse.mu/
-
-Included should be:
-    bellamybot.py
-    bellamylib.py
-    commands.py
-    crowdchoice.py
-    filehandle.py
-    gigarchive.py
-    musegames.py
-    setlistfm.py
-    setlistgenerator.py
-    timercommands.py
-    timers.py
-    txtfunctions.py
-    
-    crowd
-    gig
-    gigcloser
-    info
-    ircmsg
-    manson
-    opener
-    piano
-    previous
-    setcloser
-    setlist
-    songs
-    tour
-    twitter
-
-    config
-    LICENSE
-    TUTORIAL
-    README.md
     
 The python files are the program and its functions. The main program is in 
 bellamybot.py. The nickserv password is not included, therefore some functions
@@ -316,6 +282,51 @@ the 'setlist' and 'gig' files are accurate.
 It will also copy everything to an archive file to be put into GigArchive, or 
 whatever directory it's meant to go to.. BellamyBot will confirm when all 
 is finished, or will print an error if the current set is empty. 
+
+*   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *
+
+CUSTOM COMMANDS
+There is current support for basic text custom commands. This is done
+using the !cmd command. Further extensions to the command
+capabilities will be added in the future.
+
+The !cmd command is op only. The general syntax is here:
+
+    !cmd OPTION !command [ARGS]
+
+OPTIONS: There are 4 options to choose from. !command is either a
+new or existing command, depending on the option. It must begin with an
+exclamation mark.
+
+    add: Creates a new command. Command passed must not exist.
+
+    edit: Replaces the text of the command with the new text written in
+          ARGS. Command must exist and there has to be non-empty ARGS.
+
+    +=: Appends new text to an existing command. A space will be added in
+        between the new and existing text. Same requirements as edit.
+
+    rename: Renames a command. !command must exist. ARGS must be in the
+            same style with a prepended '!'. First command must exist
+            and second command must not exist in list.
+
+    delete: Deletes a command from the list. Command passed must exist.
+
+Proper usage will give a confirmation message. Syntax errors will be
+silently ignored.
+
+If "$nick" is included in the body of the command it will be replaced on
+call by the user who called the command.
+
+Commands exist in the file text/commands. The format is as follows.
+
+[command]
+name=!command
+body=Text of command
+
+The file is read on startup and is written to at shutdown in this format.
+Commands can be added directly to the text file. Bad formatting will
+result in the command being ignored on read.
 
 *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *
 

@@ -8,7 +8,7 @@ def remove_nr(string):
 # Throws IOError exception for any issues opening and closing the file
 def get_list(filename):
     try:
-        fileText = open(filename, 'r')
+        fileText = open(filename, 'r', encoding='utf-8')
         fileList = fileText.read().splitlines()
         fileText.close()
     except:
@@ -24,7 +24,7 @@ def put_list(filename, fileList):
     fileList = tuple(fileList)
 
     try:
-        fileText = open(filename, 'w')
+        fileText = open(filename, 'w', encoding='utf-8')
     except:
         raise IOError("Error opening " + filename)
 
@@ -37,7 +37,7 @@ def put_list(filename, fileList):
 # Throws an IOError exception for any issues opening and closing the filexx
 def list_append(filename, entry):
     try:
-        fileText = open(filename, 'a')
+        fileText = open(filename, 'a', encoding='utf-8')
     except:
         raise IOError("Error opening " + filename)
 
@@ -48,7 +48,7 @@ def list_append(filename, entry):
 # Throws an IOError exception for any issues opening the file
 def clear_file(filename):
     try:
-        fileText = open(filename, 'w')
+        fileText = open(filename, 'w', encoding='utf-8')
     except:
         raise IOError("Error opening " + filename)
 

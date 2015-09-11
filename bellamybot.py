@@ -1,5 +1,5 @@
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-BellamyBot v5.1.0 created by Kueller917.
+BellamyBot, created by Kueller917.
 Created for use with Python 3.
 Being created for personal use, the processes might not be the most efficient, 
 nor the simplest.
@@ -11,6 +11,7 @@ this. There are better bots.
 
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
+import cmd
 import twit
 import commands
 import filehandle
@@ -26,8 +27,10 @@ def main():
     irc.setInfoFromConfig('config')
     irc.start()
 
-    twitter = twit.authorize_new_twit('text/twitter')
-    currentTweet = twit.get_recent_tweet(twitter, 'muse')
+    toot = twit.authorize_new_twit('text/twitter')
+    currentTweet = twit.get_recent_tweet(toot, 'muse')
+
+    user_commands = cmd.create_commands_from_file('text/commands')
     
     # Repeating timer to say a random phrase every 10-20 minutes
     phraseTimer = Timer()
@@ -36,8 +39,6 @@ def main():
     twitTimer = Timer()
     twitTimer.minTimer(1)
 
-    crowd = CrowdChoice()
-    
     BOT_ON = True
 
     while (BOT_ON):
@@ -51,15 +52,14 @@ def main():
                 print(e)
 
         if twitTimer.check():
-            newTweet = twit.get_recent_tweet(twitter, 'muse')
-            if currentTweet.created_at != newTweet.created_at:
-                currentTweet = newTweet
-                twit.notify_new_tweet(irc, 'muse', currentTweet)
-            twitTimer.minTimer(1)
-
-        choiceMsg = crowd.check()
-        if choiceMsg != None and irc.info.state:
-            irc.msg(choiceMsg)
+            try:
+                newTweet = twit.get_recent_tweet(toot, 'muse')
+                if currentTweet.created_at != newTweet.created_at:
+                    currentTweet = newTweet
+                    twit.notify_new_tweet(irc, 'muse', currentTweet)
+                twitTimer.minTimer(1)
+            except TweepError:
+                None
 
         text = irc.incoming()
 
@@ -68,6 +68,8 @@ def main():
             and text.nick in irc.owners):
             irc.msg("Shutting down!")
             irc.quitirc("I\'ve seen all I\'ll ever need")
+            print("Saving commands to file.")
+            cmd.dump_commands_to_file(user_commands, 'text/commands')
             print("Exiting program")
             BOT_ON = False
                 
@@ -75,9 +77,7 @@ def main():
             crowd.addSong(text.argument)
 
         # Other general commands are sent to the commands function
-        commands.command_run(text, irc)
+        commands.command_run(text, irc, user_commands)
  
-    return 0
-
 if __name__ == "__main__":
     main()

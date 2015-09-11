@@ -1,3 +1,4 @@
+import cmd
 import musegames
 import setlistfm
 import filehandle
@@ -20,9 +21,9 @@ def phrase(irc):
 # Command handling is done here
 # Takes the IRCBot as input to send message results.
 # Exceptions that are caught are printed, program continues.
-def command_run(text, irc):
+def command_run(text, irc, commands):
     
-    if text.IRCcmd == "JOIN" and irc.joinmsg and irc.isAwake():
+    if text.IRCcmd == "JOIN" and irc.joinmsg() and irc.isAwake():
         if text.nick != irc.nick():
             irc.msg("Welcome to the sexy plane %s. "
                     "Enter !commands to view the bot functions." % text.nick)
@@ -123,6 +124,9 @@ def command_run(text, irc):
             except RuntimeError as r:
                 print(r)
             irc.msg(response)
+
+        elif text.command == "!cmd":
+            cmd.function(commands, irc, text.argument)
             
     # All user commands
     if text.command in ("!bot\r\n", "!bot"):
@@ -141,6 +145,9 @@ def command_run(text, irc):
         except IOError as e:
             print(e)
         irc.msg(gig[0])
+
+    elif text.command in ("!previous\r\n", "!previous"):
+        gigarchive.print_recent_setlist(irc)
 
     elif text.command == "!message":
         try:
@@ -170,9 +177,6 @@ def command_run(text, irc):
                 currentset = "...is empty"
             setmsg = setmsg + currentset
             irc.msg(setmsg)
-
-        elif text.command in ("!previous\r\n", "!previous"):
-            gigarchive.print_recent_setlist(irc)
 
         elif text.command == "!count":
             song = txtfunctions.acronym_replace(text.argument)
@@ -209,6 +213,9 @@ def command_run(text, irc):
                     "!roulette, !setfm, !ru-roulette, !setgen. Use !info "
                     "for a description of any command.")
 
+        elif text.command.strip() in commands:
+            irc.msg(commands[text.command.strip()].replace('$nick', text.nick))
+            
         if irc.gamesActive():
             # Games
             if text.command in ("!closer\r\n", "!closer"):

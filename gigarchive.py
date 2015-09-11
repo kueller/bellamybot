@@ -9,28 +9,34 @@ def song_count(song):
         gigs = os.listdir('GigArchive/%s' % tour)
         for filename in gigs:
             setlist = filehandle.get_list('GigArchive/%s/%s' % (tour, filename))
-            if song in setlist:
+            if song.lower() in [s.lower() for s in setlist]:
                 count = count + 1
     return count
 
 def last_played(irc, song):
+    if song.lower() in [s.lower() for s in filehandle.get_list('text/setlist')]:
+        gig = filehandle.get_list('text/gig')
+        irc.msg ('%s was last played at: %s' % (song, gig[0]))
+        return
+    
     tours = sorted(os.listdir('GigArchive'))
     for tour in reversed(tours):
         gigs = sorted(os.listdir('GigArchive/%s' % tour))
         for filename in reversed(gigs):
             setlist = filehandle.get_list('GigArchive/%s/%s' % (tour, filename))
-            if song in setlist:
+            if song.lower() in [s.lower() for s in setlist]:
                 irc.msg('%s was last played at: %s' % (song, setlist[0]))
                 return
     irc.msg('I do not seem to have information on that song.')
 
 def find_setlist(irc, query):
+    query = query.lower()
     found = []
     tours = os.listdir('GigArchive')
     for tour in tours:
         gigs = os.listdir('GigArchive/%s' % tour)
         for filename in gigs:
-            if filename.find(query) != -1:
+            if filename.lower().find(query) != -1:
                 found.append(filename)
     if len(found) == 0:
         irc.msg("No gigs found for given query.")

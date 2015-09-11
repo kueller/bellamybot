@@ -56,7 +56,7 @@ class IRCMessage:
                 self.IRCparams.append(token)
 
             if len(text.split(':')) > 2:
-                self.body     = text.split(':')[2]
+                self.body     = ':'.join(text.split(':')[2:])
                 self.command  = self.body.split(' ')[0]
                 if len(self.body.split(' ')) > 1:
                     self.argument = self.body.partition(' ')[2]
@@ -221,7 +221,11 @@ class IRCBot:
             text = ''
             try:
                 text = self.__getText()
-                print(text)
+
+                try:
+                    print(text)
+                except UnicodeEncodeError:
+                    None
             except socket.timeout:
                 None
 
@@ -268,6 +272,7 @@ class IRCBot:
         except socket.timeout:
             text = ''
             return IRCMessage(text)
+
         try:
             print(text)
         except UnicodeEncodeError:
