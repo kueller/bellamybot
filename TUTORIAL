@@ -1,6 +1,7 @@
 BellamyBot, created by Kueller917 from the Muse Board.
 
 http://board.muse.mu/
+https://twitter.com/bellamybot
     
 The python files are the program and its functions. The main program is in 
 bellamybot.py. The nickserv password is not included, therefore some functions
@@ -147,27 +148,19 @@ Examples:
 
     !add Supremacy, Panic Station, PiB      
          writes: "Supremacy, Panic Station, Plug In Baby"
-    
-UNDO SONG: A simple command, it will undo the latest song entered into the 
-setlist. BellamyBot will confirm if the song was removed succesfully. !undo
-on an empty setlist is silently ignored.
 
-    !undo
-
-Keep in mind this is not a proper undo function. It ONLY removes the last
-song of the setlist. If you run another command such as !setprevious or
-!replace, !undo will not reverse those commands.
+POP: A call to pop will remove the last song in the setlist. This was 
+previously called "!undo", now changed since undo is more proper. It
+emulates the "pop" function from treating the setlist as a last in, 
+first out stack, hence the name.
 
 Example:
-    !setlist                    
-        output: "Supremacy, Panic Station, Plug In Baby"
-
-    !undo                       
-        output: "The last song has been erased."
-
-    !setlist                    
-        output: "Supremacy, Panic Station"
-<<<<<<< HEAD
+    !setlist
+        Supremacy, Panic Station, Plug In Baby
+    !pop
+        output: Last song has been erased.
+    !setlist
+        Supremacy, Panic Station
 
 EXPANSION CHECKING: If you are unsure of what expands to what, besides
 looking at the function in txtfunctions.py you can also use the command
@@ -184,8 +177,6 @@ Example:
 
    !exp SS
         output: "SS expands to Stockholm Syndrome"
-=======
->>>>>>> 64707038fcff2a0d85ca43c93205c9e61e49ee80
     
 REPLACE SONG: If a mistaken song is found and it is not the latest song, 
 instead of using undo multiple times and rewriting the rest of the set, 
@@ -246,28 +237,35 @@ Example:
 
     !setlist                    
         output: "Supermassive Black Hole, Survival" 
-<<<<<<< HEAD
 
-CHECK EXPANSIONS: BellamyBot expands certain acronyms. If
-you are unsure if an acronym is expanded use !exp.
-
-Example:
-    !exp AP
-        output: "AP expands to Apocalypse Please"
-
-    !exp ASDF
-        output: "There is no expansion for ASDF"
-
-Remember the acronyms are case sensitive.
-=======
->>>>>>> 64707038fcff2a0d85ca43c93205c9e61e49ee80
-    
 CLEAR SET: When everything is done, the setlist can be emptied by the clear 
 set command.
 
     !clearset
     
 And that's it. I don't think you need an example for it.
+
+UNDO: This will undo the last change to the setlist and return it to its
+prior form. The base state for undo is when the bot turn on, and then any
+call to !clearset afterwards. Once a set is cleared it can no longer be
+reverted. Undo is unlimited until it reaches a base state.
+
+Example:
+    !setlist
+        Take A Bow, Starlight, Supermassive Black Hole
+    !delete Starlight
+        output: Deleted 1 out of 1 songs
+    !setlist
+        Take A Bow, Supermassive Black Hole
+    !undo
+    !setlist
+        Take A Bow, Starlight, Supermassive Black Hole
+
+REDO: Expectedly, acts as the inverse of !undo. Will revert any calls to
+!undo until it reaches the most recent state. If, after an undo, a set is
+modified, that state becomes the new highest state and redos can't be done.
+
+Function should be self-explanatory based off !undo's example.
 
 PREVIOUS SETLIST: When the gig is all done and everyone is complaining, it's 
 time to assign the current setlist as the previous. Make sure everything is 
@@ -281,7 +279,9 @@ the 'setlist' and 'gig' files are accurate.
 
 It will also copy everything to an archive file to be put into GigArchive, or 
 whatever directory it's meant to go to.. BellamyBot will confirm when all 
-is finished, or will print an error if the current set is empty. 
+is finished, or will print an error if the current set is empty. If the
+twitter keys in text/twitter is accurate it will post the setlist to
+the associated twitter account. This one is @BellamyBot.
 
 *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *
 
@@ -354,7 +354,7 @@ The following commands are state dependent:
     !findset        Searches the GigArchive for gigs queried by the 
                     command
     !count          Gets the number of times a queried song was played.
-    !loadset        Displays a setlist by date.
+    !loadset        Displays a setlist by date (format YYYY/MM/DD).
     !info           Gets info on any command. See text/info.
     
 *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *

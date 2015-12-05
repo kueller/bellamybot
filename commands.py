@@ -1,4 +1,5 @@
 import cmd
+import undo
 import musegames
 import setlistfm
 import filehandle
@@ -70,6 +71,7 @@ def command_run(text, irc, commands):
         # Setlist controls
         elif text.command == "!add":
             txtfunctions.add_song(text.argument)
+            undo.add()
 
         elif text.command == "!exp":
             original = filehandle.remove_nr(text.argument)
@@ -82,17 +84,21 @@ def command_run(text, irc, commands):
         elif text.command in ("!clearset\r\n", "!clearset"):
             try:
                 filehandle.clear_file('text/setlist')
+                undo.refresh()
             except IOError as e:
                 print(e)
             irc.msg("Current setlist has been cleared.")
 
-        elif text.command in ("!undo\r\n", "!undo"):
+        elif text.command in ("!pop\r\n", "!pop"):
             try:
-                txtfunctions.song_undo()
+                txtfunctions.song_pop()
             except IOError as e:
                 print(e)
+                return
             except IndexError as i:
                 print(i)
+                return
+            undo.add()
             irc.msg("The last song has been erased")
 
         elif text.command == "!insert":
@@ -100,6 +106,9 @@ def command_run(text, irc, commands):
                 response = txtfunctions.insert_song(text.argument)
             except IOError as e:
                 print(e)
+                return
+            if response.find('ERROR') == -1:
+                undo.add()
             irc.msg(response)
 
         elif text.command == "!replace":
@@ -107,6 +116,8 @@ def command_run(text, irc, commands):
                 response = txtfunctions.replace_song(text.argument)
             except IOError as e:
                 print(e)
+            if response.find('ERROR') == -1:
+                undo.add()
             irc.msg(response)
 
         elif text.command == "!delete":
@@ -114,6 +125,8 @@ def command_run(text, irc, commands):
                 response = txtfunctions.delete_song(text.argument)
             except IOError as e:
                 print(e)
+            if response != 'Could not delete any songs.':
+                undo.add()
             irc.msg(response)
         
         elif text.command in ("!setprevious\r\n", "!setprevious"):
@@ -124,6 +137,14 @@ def command_run(text, irc, commands):
             except RuntimeError as r:
                 print(r)
             irc.msg(response)
+
+        elif text.command in ("!undo\r\n", "!undo"):
+            if undo.undo():
+                irc.msg("Undid last change to setlist.")
+
+        elif text.command in ("!redo\r\n", "!redo"):
+            if undo.redo():
+                irc.msg("Redid last change to setlist.")
 
         elif text.command == "!cmd":
             cmd.function(commands, irc, text.argument)

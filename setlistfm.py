@@ -1,16 +1,30 @@
 import json
 import random
 import requests
+import filehandle
 
 url1 = "http://api.setlist.fm/rest/0.1/artist/"
 url2 = "http://api.setlist.fm/rest/0.1/setlist/version/"
 
-waaiURL = "http://api.waa.ai/shorten?url="
+waaiURL = "http://api.waa.ai/shorten"
 
 # Shortens a given URL using the API from http://waa.ai
 def url_shorten(url):
-    r = requests.get("%s%s" % (waaiURL, url))
+    # API change, need to fix
+    return url
+
+    f = filehandle.get_list('text/urlkey')
+    if len(f) > 0:
+        key = f[0].strip()
+    else:
+        return ''
+
+    request_url = "%s?key=%s?url=%s" % (waaiURL, key, url)
+    r = requests.get("%s" % request_url)
     data = r.json()
+
+    if data['success'] == False:
+        return url
 
     return(data['data']['url'])
 

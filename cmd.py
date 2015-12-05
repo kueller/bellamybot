@@ -1,5 +1,16 @@
 import filehandle
 
+# The format of a command in the command file is:
+#
+# [command]
+# name = !command
+# body = This is the text the command will run.
+#
+# The value $nick in the body will be replaced at runtime with the
+# nick of the user who called the command.
+# By convention, commands should start with a '!', or some other
+# special character to keep it specific.
+
 def dump_commands_to_file(commands, filename):
     filelist = []
     for element in commands:

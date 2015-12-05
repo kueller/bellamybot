@@ -1,7 +1,9 @@
 import sys
+import twit
 import filehandle
 
 # Allows for replacement of acronym entries
+# Should be replaced with a modifiable dictionary
 def acronym_replace(entry):
     entry = filehandle.remove_nr(entry)
     if entry == 'AP':
@@ -19,7 +21,7 @@ def acronym_replace(entry):
     elif entry == 'IBTY':
         entry = 'I Belong To You'
     elif entry == 'IS':
-        entry = 'Isolated System'
+        entry = 'The 2nd Law: Isolated System'
     elif entry == 'KoC':
         entry = 'Knights of Cydonia'
     elif entry == 'MotP':
@@ -42,6 +44,8 @@ def acronym_replace(entry):
         entry = 'Time Is Running Out'
     elif entry == 'TOADA':
         entry = 'Thoughts of a Dying Atheist'
+    elif entry == 'UD':
+        entry = 'Undisclosed Desires'
     return entry
 
 # Adds a song, or string of songs, to the .setlist file
@@ -54,12 +58,12 @@ def add_song(argument):
         try:
             filehandle.list_append('text/setlist', song)
         except IOError:
-            print("Error adding song to setlist")
+            print("Error adding song to setlist")            
 
 # Removed the most recently entered song from the setlist file
 # Passes on I/O exceptions
 # Throws Index exception is called on an empty setlist
-def song_undo():
+def song_pop():
     try:
         undoList = filehandle.get_list('text/setlist')
     except IOError:
@@ -112,6 +116,8 @@ def print_set(filename):
 
 # Copies the gig and setlist to a previous setlist file
 # Then copies the previous setlist to an archive with the gig as the file name
+# Will update any song count and last played values in the archive database.
+# Finally, will tweet the setlist to the associated Twitter account.
 # Passes on I/O Exceptions
 # Throws RuntimeError exception for gig formatting issues.
 def set_previous():
@@ -171,6 +177,25 @@ def set_previous():
         except IOError:
             raise IOError("Error appending song for set_previous")
 
+    sys.stdout.write('\t[DONE]\nUpdating database...')
+
+    database = filehandle.get_list('text/archive.db')
+    for entry in database:
+        if entry.startswith('c!'):
+            song = entry.split('!')[1].split('=')[0]
+            if song in [s.lower() for s in setlist]:
+                count = int(entry.split('!')[1].split('=')[1])
+                count = count + 1
+                database[database.index(entry)] = 'c!%s=%d' % (song, count)
+        elif entry.startswith('lp!'):
+            song = entry.split('!')[1].split('::')[0]
+            if song in [s.lower() for s in setlist]:
+                database[database.index(entry)] = 'lp!%s::%s' % (song, archivePath)
+
+    filehandle.put_list('text/archive.db', database)
+
+    sys.stdout.write('\t[DONE]\nTweeting setlist...')
+    twit.tweet_setlist()
     sys.stdout.write('\t[DONE]\n')
 
     outputString = "Current setlist copied over as previous set."

@@ -1,5 +1,5 @@
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-BellamyBot, created by Kueller917.
+BellamyBot v4.1.3 created by Kueller917.
 Created for use with Python 3.
 Being created for personal use, the processes might not be the most efficient, 
 nor the simplest.
@@ -13,6 +13,8 @@ this. There are better bots.
 
 import cmd
 import twit
+import undo
+import tweepy
 import commands
 import filehandle
 import timercommands
@@ -37,7 +39,9 @@ def main():
     phraseTimer.minTimer(randint(10,15))
 
     twitTimer = Timer()
-    twitTimer.minTimer(1)
+    twitTimer.minTimer(2)
+
+    undo.refresh()
 
     BOT_ON = True
 
@@ -58,8 +62,8 @@ def main():
                     currentTweet = newTweet
                     twit.notify_new_tweet(irc, 'muse', currentTweet)
                 twitTimer.minTimer(1)
-            except TweepError:
-                None
+            except tweepy.error.TweepError:
+                print('Twitter read error. Continuing.')
 
         text = irc.incoming()
 
@@ -72,7 +76,7 @@ def main():
             cmd.dump_commands_to_file(user_commands, 'text/commands')
             print("Exiting program")
             BOT_ON = False
-                
+
         if text.command == "!choice" and crowd.isActive():
             crowd.addSong(text.argument)
 
