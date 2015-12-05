@@ -77,7 +77,13 @@ def main():
             print("Exiting program")
             BOT_ON = False
 
-        if text.command == "!choice" and crowd.isActive():
+        elif text.command == "!tweet" and text.nick in irc.modlist:
+            twit.tweet(toot, text.argument)
+
+        elif text.command == "!retweet" and text.nick in irc.modlist:
+            twit.retweet(toot, text.argument)
+
+        elif text.command == "!choice" and crowd.isActive():
             crowd.addSong(text.argument)
 
         # Other general commands are sent to the commands function

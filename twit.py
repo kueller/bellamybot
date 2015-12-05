@@ -46,6 +46,20 @@ def notify_new_tweet(irc, username, tweet):
                     % (username, tweet.text[0:60], url_shorten(url)))
     irc.msg(notification)
 
+def tweet(twit, message):
+    if len(message) <= 140:
+        twit.update_status(message.strip())
+
+def retweet(twit, url):
+    url = url.replace('//', '').strip()
+    tokens = url.split('/')
+
+    if len(tokens) != 4:
+        return
+
+    tweet_id = int(tokens[3])
+    twit.retweet(tweet_id)
+    
 # Tweets the current setlist. Called during !setprevious
 # Creates a secondary, temporary tweepy API object so it can be called from
 # anywhere.
