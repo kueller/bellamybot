@@ -1,6 +1,5 @@
 import random
 import filehandle
-from timers import Timer
 
 # Says a random phrase from "botphrases"
 # Passes on the exception if there was an problem with the text file
@@ -19,40 +18,30 @@ def random_phrase():
 # A game of russian roulette
 # 1 in 6 chance of getting "shot" (kicked from the channel)
 # Increments a series of action in the style of a state machine
-def russian_roulette(irc, nick):
-    def roulette_wait():
-        t = Timer()
-        t.secTimer(3)
-        while t.check() is False:
-            None
 
-    def roulette_shoot():
+def roll_1(irc):
+    irc.msg("\x01ACTION spins cylinder.")
+def roll_2(args):
+    irc = args[0]
+    nick = args[1]
+    irc.msg("\x01ACTION points gun at %s." % nick)
+def roll_3(irc):
+    irc.msg("\x01ACTION pulls trigger.")
+def roll_shoot(args):
+    irc = args[0]
+    nick = args[1]
+    shoot = args[2]
+    if shoot:
         if nick in irc.modlist:
             irc.msg("You're too important to die.")
         else:
             irc.kick(nick, "BANG!")
-            irc.msg("He didn't fly so good. Who wants to try next?")
-            
-    def roulette_loop(i, roll):
-        if i == 0:
-            irc.msg("\x01ACTION spins cylinder.")
-            roulette_wait()
-            roulette_loop(i + 1, roll)
-        elif i == 1:
-            irc.msg("\x01ACTION points gun at %s." % nick)
-            roulette_wait()
-            roulette_loop(i + 1, roll)
-        elif i == 2:
-            irc.msg("\x01ACTION pulls trigger.")
-            roulette_wait()
-            roulette_loop(i + 1, roll)
-        elif i == 3:
-            if roll == 6:
-                roulette_shoot()
-            else:
-                irc.msg("You got lucky this time.")
+    else:
+        irc.msg("You got lucky this time.")
 
-    cylinder = random.randint(1,6)
-    print("New roulette from %s." % nick)
-    print("Cylinder: %d." % cylinder)
-    roulette_loop(0, cylinder)
+def russian_roulette(irc, nick):
+    cylinder = random.randint(1,6) == 6
+    roll_1(irc)
+    irc.addTimer("sec", 2, roll_2, [irc, nick])
+    irc.addTimer("sec", 4, roll_3, irc)
+    irc.addTimer("sec", 7, roll_shoot, [irc, nick, cylinder])

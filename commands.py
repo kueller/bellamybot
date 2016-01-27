@@ -1,5 +1,6 @@
 import cmd
 import undo
+import boteval
 import musegames
 import setlistfm
 import filehandle
@@ -32,10 +33,12 @@ def command_run(text, irc, commands):
     if text.nick in irc.modlist:
         if text.command in ("!wake\r\n", "!wake"):
             irc.wake()
+            irc.resumeTimers()
             irc.msg("BellamyBot is online.")
 
         elif text.command in ("!sleep\r\n", "!sleep"):
             irc.sleep()
+            irc.pauseTimers()
             irc.msg("Sleep mode activated")
         
         elif text.command == "!joinmsg":
@@ -45,6 +48,12 @@ def command_run(text, irc, commands):
             elif text.argument in ("off\r\n", "off"):
                 irc.deactivateJoinMsg()
                 print("Join messages OFF")
+
+        elif text.command == "!timers":
+            if text.argument in ("on\r\n", "on"):
+                irc.resumeTimers()
+            elif text.argument in ("off\r\n", "off"):
+                irc.pauseTimers()
 
         elif text.command == "!gamemode":
             if text.argument in ("on\r\n", "on"):
@@ -200,9 +209,7 @@ def command_run(text, irc, commands):
             irc.msg(setmsg)
 
         elif text.command == "!count":
-            song = txtfunctions.acronym_replace(text.argument)
-            count = gigarchive.song_count(song)
-            irc.msg("%s has been played %d times." % (song, count))
+            gigarchive.song_count(irc, text.argument)
 
         elif text.command == "!lastplayed":
             song = txtfunctions.acronym_replace(text.argument)
@@ -227,6 +234,10 @@ def command_run(text, irc, commands):
                 if line.split(':')[0] == command:
                     irc.msg(line.split(':')[1])
 
+        elif text.command == "!eval":
+            ev = boteval.BotEval()
+            ev.eval(irc, text.argument)
+
         elif text.command in ("!commands\r\n", "!commands"):
             irc.msg("Set commands: !gig, !setlist, !previous, !findset, "
                     "!loadset, !count, !lastplayed.")
@@ -235,7 +246,7 @@ def command_run(text, irc, commands):
                     "for a description of any command.")
 
         elif text.command.strip() in commands:
-            irc.msg(commands[text.command.strip()].replace('$nick', text.nick))
+            cmd.execute(irc, text)
             
         if irc.gamesActive():
             # Games
@@ -244,14 +255,14 @@ def command_run(text, irc, commands):
                     closer = musegames.random_game('text/gigcloser')
                 except IOError as e:
                     print(e)
-                irc.msg("%s\'s game has closed with %s!" % (text.nick, closer))
+                irc.msg("%s\'s gig has closed with %s!" % (text.nick, closer))
 
             elif text.command in ("!opener\r\n", "!opener"):
                 try:
                     opener = musegames.random_game('text/opener')
                 except IOError as e:
                     print(e)
-                irc.msg("%s\'s game has opened with %s!" % (text.nick, opener))
+                irc.msg("%s\'s gig has opened with %s!" % (text.nick, opener))
 
             elif text.command in ("!realfan\r\n", "!realfan"):
                 if randint(0,1):

@@ -76,7 +76,7 @@ def tweet_setlist():
 
     while len(setlist) > 0:
         # Message length, (X/Y), and space in between
-        if (len(msg) + len(setlist[0]) + 2) > 135:
+        if (len(msg) + len(setlist[0]) + 2) >= 135:
             tweets.append(msg)
             msg = ''
             

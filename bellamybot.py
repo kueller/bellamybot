@@ -18,10 +18,8 @@ import tweepy
 import commands
 import filehandle
 import timercommands
-from timers import Timer
 from random import randint
 from bellamylib import IRCBot
-from crowdchoice import CrowdChoice
 
 def main():
 
@@ -29,41 +27,38 @@ def main():
     irc.setInfoFromConfig('config')
     irc.start()
 
+    irc.initializeTimers()
+
     toot = twit.authorize_new_twit('text/twitter')
     currentTweet = twit.get_recent_tweet(toot, 'muse')
 
     user_commands = cmd.create_commands_from_file('text/commands')
     
-    # Repeating timer to say a random phrase every 10-20 minutes
-    phraseTimer = Timer()
-    phraseTimer.minTimer(randint(10,15))
+    def twitter_check(args):
+        try:
+            newTweet = twit.get_recent_tweet(toot, 'muse')
+            if currentTweet.created_at != newTweet.created_at:
+                currentTweet = newTweet
+                twit.notify_new_tweet(irc, 'muse', currentTweet)
+        except tweepy.error.TweepError:
+            print('Twitter read error. Continuing.')
 
-    twitTimer = Timer()
-    twitTimer.minTimer(2)
+    def phrase_check(args):
+        try:
+            commands.phrase(irc)
+        except IOError as e:
+            print(e)
 
+    #irc.addTimer("min", 1, twitter_check, None, loop=True)
+    irc.addTimer("min", 0, phrase_check, None, rand=True, rrange=(10,20), loop=True)
+
+    irc.startTimers()
+    
     undo.refresh()
 
     BOT_ON = True
 
     while (BOT_ON):
-
-        # Timer checks
-        if phraseTimer.check():
-            try:
-                commands.phrase(irc)
-                phraseTimer.minTimer(randint(10,20))
-            except IOError as e:
-                print(e)
-
-        if twitTimer.check():
-            try:
-                newTweet = twit.get_recent_tweet(toot, 'muse')
-                if currentTweet.created_at != newTweet.created_at:
-                    currentTweet = newTweet
-                    twit.notify_new_tweet(irc, 'muse', currentTweet)
-                twitTimer.minTimer(1)
-            except tweepy.error.TweepError:
-                print('Twitter read error. Continuing.')
 
         text = irc.incoming()
 
@@ -75,6 +70,8 @@ def main():
             print("Saving commands to file.")
             cmd.dump_commands_to_file(user_commands, 'text/commands')
             print("Exiting program")
+            if irc.timersInitialized():
+                irc.killTimers()
             BOT_ON = False
 
         elif text.command == "!tweet" and text.nick in irc.modlist:
@@ -82,9 +79,6 @@ def main():
 
         elif text.command == "!retweet" and text.nick in irc.modlist:
             twit.retweet(toot, text.argument)
-
-        elif text.command == "!choice" and crowd.isActive():
-            crowd.addSong(text.argument)
 
         # Other general commands are sent to the commands function
         commands.command_run(text, irc, user_commands)

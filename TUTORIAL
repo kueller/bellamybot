@@ -285,6 +285,55 @@ the associated twitter account. This one is @BellamyBot.
 
 *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *
 
+GIG ARCHIVE
+The bot offers searching tools for all gigs. These functions for search 
+include !count, !lastplayed, !findset, and !loadset. The first 3 will
+include parameter options.
+
+    --range=YYYY/MM/DD:YYYY/MM/DD Specifies a specific range to scan
+                 Passing -1 for either the lower or upper range will
+                 make the date infinite in that direction. As in, either
+                 search from the beginning or to the end. --range=-1:-1
+                 is equivalent to not setting a range at all.
+    --country=CC Set the 2 letter country code to limit search to a
+                 specific country
+    --tour=tour  Limit search to specific tour
+
+    !count: Finds the number of times a song has been played.
+    !lastplayed: Finds the last time a song was played.
+    !findset: Searches a series of tokens and displays matching setlists.
+              Includes the other option --strict, which will limit results
+              to only sets that match all input tokens.
+              Findset has lexographic parsing, so you can pass in 
+              "Map of the Problematique", with quotation marks, to avoid
+              getting results that match "of" and "the" separately.
+    !loadset: Loads a setlist from the archive, takes in a YYYY/MM/DD format
+              only. 
+
+All search arguments are case insensitive. Hyphen options are case sensitive.
+
+*   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *
+
+EVAL
+The bot includes a Lisp-like interpreter. This can be accessed via the !eval
+command. As like Lisp is functions as (command arg1, arg2, ...). The valid
+functions so far are
+
+    Arithmetic: "+,-,*,/" (remember Lisp is prefix notation)
+    "if": (if (statement) do-this else-that)
+    "cond": (cond ((statement) action) ((next-statement) action))
+    "=": (= this that), a boolean
+    "not": (not this that), boolean
+    "is-mod": (is-mod $nick), boolean, checks bot's modlist
+    "print": Used for auto-formatted printing, i.e. 
+             (print "Something" 1 (statement arg) "done")
+             All values will be converted to string and concatenated
+             with spaces.
+
+Results are printed to the channel.
+
+*   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *
+
 CUSTOM COMMANDS
 There is current support for basic text custom commands. This is done
 using the !cmd command. Further extensions to the command
@@ -316,12 +365,18 @@ Proper usage will give a confirmation message. Syntax errors will be
 silently ignored.
 
 If "$nick" is included in the body of the command it will be replaced on
-call by the user who called the command.
+call by the user who called the command. There are also input parameters
+$1, $2, $3, etc. They are static though. If you use $3 you must have 3
+parameters. There are no optional ones.
+
+You can also pass in !eval as the first part of the command to make 
+the command be parsed through boteval.
 
 Commands exist in the file text/commands. The format is as follows.
 
 [command]
 name=!command
+chan=#channel
 body=Text of command
 
 The file is read on startup and is written to at shutdown in this format.

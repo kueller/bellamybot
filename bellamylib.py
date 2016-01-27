@@ -15,7 +15,10 @@ Use incoming() to receive text which will return an IRCMessage instance.
 
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
+import time
 import socket
+import random
+import threading
 
 # Class for parsing the IRC incoming messages.
 # Not every message will be associated with every variable
@@ -144,6 +147,108 @@ class _BotInfo:
         if self.password == None:
             print("Warning: No password entered.")
 
+# A timer that stores a time delay (minutes or seconds) that can be checked
+# until the localtime has surpassed the delay. Limits are the next highest time
+# division (i.e. 1 minute or 1 hour).
+class _Timer:
+    rawDelay  = None # The amount of time delayed after an initialization
+    timeDelay = None # The second or minute on the clock calculated from rawDelay
+    timerType = None # "sec" or "min"
+
+    random = False
+    randRange = ()
+
+    loop = False
+
+    active = False
+
+    def __init__(self, ttype, delay, rand=False, rrange=(), loop=False):
+        self.rawDelay = delay
+        if ttype is not "sec" and ttype is not "min":
+            raise ValueError("type needs to be \"sec\" or \"min\"")
+        self.timerType = ttype
+        self.random = rand
+        self.randRange = rrange
+        self.loop = loop
+        self.__setDelay(self.rawDelay)
+        self.active = True
+
+    # If the loop is a randomly generated range, the raw delay is ignored.
+    def __setDelay(self, delay):
+        if self.random:
+            if len(self.randRange) != 2:
+                raise ValueError("Timer random range needs two specified values.")
+            delay = random.randint(self.randRange[0], self.randRange[1])
+        if self.timerType == "sec":
+            currentSec = time.localtime()[5]
+            if (currentSec + delay) > 61:
+                self.timeDelay = (currentSec + delay) - 61
+            else:
+                self.timeDelay = currentSec + delay
+        elif self.timerType == "min":
+            currentMin = time.localtime()[4]
+            if (currentMin + delay) > 59:
+                self.timeDelay = (currentMin + delay) - 59
+            else:
+                self.timeDelay = currentMin + delay
+
+    def check(self):
+        if not self.active:
+            return False
+        
+        if self.timerType == "sec":
+            state = time.localtime()[5] == self.timeDelay
+        elif self.timerType == "min":
+            state = time.localtime()[4] == self.timeDelay
+
+        if state:
+            if self.loop:
+                self.__setDelay(self.rawDelay)
+            else:
+                self.active = False
+                
+        return state
+
+# The main loop for bot timers. This will be run in a different thread to
+# run in parallel with the main bot.
+class _BotTimers:
+    __timerList = []
+
+    # These are accesed from outside to change
+    initialized = False # Controls the main loop
+    active = False      # Controls whether timer functions will run
+
+    def __init__(self):
+        self.thread = threading.Thread(target=self.__loop, args=())
+        self.initialized = True
+
+    def begin(self):
+        self.active = True
+        self.thread.start()
+
+    # Creates a timer class, that when reached will activate a callback function
+    def addTimer(self, ttype, delay, callback,
+                 args, _rand=False, _rrange=(), _loop=False):
+        t_entry = {}
+        timer = _Timer(ttype, delay, rand=_rand, rrange=_rrange, loop=_loop)
+
+        t_entry['timer'] = timer
+        t_entry['callback'] = callback
+        t_entry['args'] = args
+
+        self.__timerList.append(t_entry)
+
+    def __loop(self):
+        while self.initialized:
+            del_q = []
+            for entry in self.__timerList:
+                if entry['timer'].check() and self.active:
+                    entry['callback'](entry['args'])
+                if not entry['timer'].active:
+                    del_q.append(entry)
+            for e in del_q:
+                self.__timerList.remove(e)
+            time.sleep(1)
             
 # General class for the IRC connection. Contains all join and messaging commands
 class IRCBot:
@@ -204,6 +309,24 @@ class IRCBot:
         self.__info.joinmsg = True
     def deactivateJoinMsg(self):
         self.__info.joinmsg = False
+
+    # Timer controls
+    def initializeTimers(self):
+        self.__timers = _BotTimers()
+    def timersInitialized(self):
+        return self.__timers is not None
+    def startTimers(self):
+        self.__timers.begin()
+    def pauseTimers(self):
+        self.__timers.active = False
+    def resumeTimers(self):
+        self.__timers.active = True
+    def killTimers(self):
+        self.__timers.initialized = False        
+    def addTimer(self, ttype, delay, callback,
+                 args, rand=False, rrange=(), loop=False):
+        self.__timers.addTimer(ttype, delay, callback, args,
+                               _rand=rand, _rrange=rrange, _loop=loop)
         
     def start(self):
         self.__info.verifyConfig()
@@ -251,7 +374,6 @@ class IRCBot:
     # Internal connection initializations.
     def __connectServer(self, server):
         self.__chat.connect((server, 6667))
-        self.__chat.settimeout(1)
     def __connectUser(self, name, message):
         self.__chat.send(("USER %s botnick botnick :%s\r\n" % (name, message)).encode('utf-8'))
     def __connectNick(self, nick):
@@ -267,22 +389,16 @@ class IRCBot:
     # Formats and prepares an IRCMessage instance to return.
     # Also updates the userlists if applicable.
     def incoming(self):
-        try:
-            text = self.__getText()
-        except socket.timeout:
-            text = ''
-            return IRCMessage(text)
-
-        try:
-            print(text)
-        except UnicodeEncodeError:
-            None
-            
-        text = text.strip()
+        text = self.__getText().strip()
         
         if text.find("PING") != -1:
             self.__chat.send(("PONG %s\r\n" % (text.split()[1])).encode('utf-8'))
-
+        else:
+            try:
+                print(text)
+            except UnicodeDecoreError:
+                None
+            
         for line in text.split('\n'):
             message = IRCMessage(line)
             if message.IRCcmd == '353':
@@ -321,30 +437,24 @@ class IRCBot:
             nick = nick[1:]
             if nick not in self.modlist:
                 self.modlist.append(nick)
-                print('Added %s to modlist.' % nick)
         elif nick[0] == '~':
             nick = nick[1:]
             if nick not in self.modlist or nick not in self.owners:
                 self.modlist.append(nick)
                 self.owners.append(nick)
-                print('Added %s as owner.' % nick)
 
         if nick not in self.userlist:
             self.userlist.append(nick)
-            print('Added %s to user list.' % nick)
 
     def __removeUser(self, nick):
         nick = nick.strip()
         
         if nick in self.userlist:
             self.userlist.remove(nick)
-            print('Removed %s from user list.' % nick)
         if nick in self.modlist:
             self.modlist.remove(nick)
-            print('Removed %s from modlist.' % nick)
         if nick in self.owners:
             self.owners.remove(nick)
-            print('Removed %s from owners.' % nick)
 
     def __updateUser(self, IRCparams):
         if len(IRCparams) < 3:
@@ -357,20 +467,16 @@ class IRCBot:
             if 'o' in modeset or 'a' in modeset or 'h' in modeset:
                 if nick not in self.modlist:
                     self.modlist.append(nick)
-                    print('Updated %s to modlist.' % nick)
             if 'q' in modeset:
                 if nick not in self.owners:
                     self.owners.append(nick)
-                    print('Updated %s to owner.' % nick)
         elif modeset.startswith('-'):
             if 'o' in modeset or 'a' in modeset or 'h' in modeset:
                 if nick in self.modlist:
                     self.modlist.remove(nick)
-                    print('Update/removed %s from modlist.' % nick)
             elif 'q' in modeset:
                 if nick in self.owners:
                     self.owners.remove(nick)
-                    print('Updated/removed %s from owners.' % nick)
 
     def __setUserList(self, text):
         for nick in text.body.split(' '):

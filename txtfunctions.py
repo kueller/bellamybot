@@ -10,6 +10,8 @@ def acronym_replace(entry):
         entry = 'Apocalypse Please'
     elif entry == 'B&H':
         entry = 'Butterflies & Hurricanes'
+    elif entry == 'CE':
+        entry = 'Citizen Erased'
     elif entry == 'CoD':
         entry = 'City of Delusion'
     elif entry == 'DI':
