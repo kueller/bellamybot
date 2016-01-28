@@ -156,7 +156,7 @@ def command_run(text, irc, commands):
                 irc.msg("Redid last change to setlist.")
 
         elif text.command == "!cmd":
-            cmd.function(commands, irc, text.argument)
+            cmd.function(irc, commands, text.argument)
             
     # All user commands
     if text.command in ("!bot\r\n", "!bot"):
@@ -246,7 +246,7 @@ def command_run(text, irc, commands):
                     "for a description of any command.")
 
         elif text.command.strip() in commands:
-            cmd.execute(irc, text)
+            cmd.execute(irc, commands, text)
             
         if irc.gamesActive():
             # Games

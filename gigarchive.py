@@ -270,7 +270,11 @@ def print_set_by_date(irc, date):
             for gig in gigs:
                 if gig_date(gig) == date:
                     gig_file = 'GigArchive/%s/%s' % (tour, gig)
-                    setlist = filehandle.get_list(gig_file)
+                    try:
+                        setlist = filehandle.get_list(gig_file)
+                    except IOError:
+                        irc.msg('Error opening gig file.')
+                        return
                     irc.msg(setlist[0] + ':')
 
                     setprint = txtfunctions.create_set_string(setlist[1:])

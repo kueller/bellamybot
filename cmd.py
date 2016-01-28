@@ -110,7 +110,7 @@ def function(irc, commands, argument):
                 del commands[cname]
                 irc.msg("\"%s\" has been removed from the command list." % cname)
 
-def execute(irc, text):
+def execute(irc, commands, text):
     cmd = text.command.strip()
     if not cmd in commands:
         return
